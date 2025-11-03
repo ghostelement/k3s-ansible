@@ -1,0 +1,85 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations: {}
+  labels:
+    app: {{ .Values.image.nacos.name }}
+    {{- include "nacos-server.labels" . | nindent 4 }}
+  name: {{ .Values.image.nacos.name }}
+spec:
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: {{ .Values.image.nacos.name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.image.nacos.name }}
+    spec:     
+      containers:
+        - env:
+            - name: MODE
+              value: standalone
+            - name: SPRING_DATASOURCE_PLATFORM
+              value: mysql
+            - name: MYSQL_SERVICE_HOST
+              value: {{ .Values.db.host }}
+            - name: MYSQL_SERVICE_PORT
+              value: {{ .Values.db.port | quote }}
+            - name: MYSQL_SERVICE_DB_NAME
+              value: {{ .Values.db.db_name }}
+            - name: MYSQL_SERVICE_USER
+              value: {{ .Values.db.root_username }}
+            - name: MYSQL_SERVICE_PASSWORD
+              value: {{ .Values.db.root_password }}
+            - name: MYSQL_SERVICE_DB_PARAM
+              value: serverTimezone=Asia/Shanghai&characterEncoding=utf8&connectTimeout=1000&socketTimeout=3000&autoReconnect=true&useSSL=false
+            - name: NACOS_AUTH_ENABLE
+              value: 'true'
+            - name: NACOS_AUTH_TOKEN
+              value: eWlrYW5nXzA1MzFfbmFjb3Nfc2VydmVyX2F1dGhfdG9rZW4=
+            - name: NACOS_AUTH_IDENTITY_KEY
+              value: ykServerAuth
+            - name: NACOS_AUTH_IDENTITY_VALUE
+              value: ykAuth
+            - name: NACOS_AUTH_CACHE_ENABLE
+              value: 'true'
+            {{- with .Values.env }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+          image: "{{ .Values.image.nacos.repository }}:{{ .Values.image.nacos.tag }}"
+          imagePullPolicy: IfNotPresent
+          livenessProbe:
+            failureThreshold: 3
+            initialDelaySeconds: 15
+            periodSeconds: 30
+            successThreshold: 1
+            tcpSocket:
+              port: 8848
+            timeoutSeconds: 1
+          name: {{ .Values.image.nacos.name }}
+          readinessProbe:
+            failureThreshold: 3
+            initialDelaySeconds: 15
+            periodSeconds: 30
+            successThreshold: 1
+            tcpSocket:
+              port: 8848
+            timeoutSeconds: 1
+          resources:
+          {{- toYaml .Values.resources | nindent 12 }}
+          startupProbe:
+            failureThreshold: 3
+            initialDelaySeconds: 10
+            periodSeconds: 30
+            successThreshold: 1
+            tcpSocket:
+              port: 8848
+            timeoutSeconds: 1
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      terminationGracePeriodSeconds: 30

@@ -1,0 +1,17 @@
+{{- if .Values.modules.material.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.image.material.name }}
+  labels:
+    {{- include "ctyk-yjk.labels" . | nindent 4 }}
+spec:
+  type: ClusterIP
+  ports:
+    - port: {{ .Values.image.material.port }}
+      targetPort: {{ .Values.image.material.port }}
+      protocol: TCP
+      name: http
+  selector:
+    app: {{ .Values.image.material.name }}
+{{- end }}

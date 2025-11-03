@@ -1,0 +1,5 @@
+apiVersion: v2
+description: 智慧医院后端  体检管理中心
+name: ctyk-yjk-pems
+type: application
+version: 1.7.0

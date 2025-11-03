@@ -1,0 +1,18 @@
+{{- if .Values.ychz }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.image.iglSiteYchz.name }}
+  labels:
+    {{- include "ctyk-yjk.labels" . | nindent 4 }}
+spec:
+  
+  type: ClusterIP
+  ports:
+    - port: {{ .Values.image.iglSiteYchz.port }}
+      targetPort: {{ .Values.image.iglSiteYchz.port }}
+      protocol: TCP
+      name: http
+  selector:
+    app: {{ .Values.image.iglSiteYchz.name }}
+{{- end }}

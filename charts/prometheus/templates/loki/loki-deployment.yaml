@@ -1,0 +1,72 @@
+{{- if .Values.loki.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    name: {{ .Values.loki.name }}
+  name: {{ .Values.loki.name }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ .Values.loki.name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.loki.name }}
+    spec:
+      containers:
+      - image: "{{ .Values.loki.image.repository }}:{{ .Values.loki.image.tag }}"
+        name: {{ .Values.loki.name }}
+        ports:
+        {{- range $key, $value := .Values.loki.ports }}
+          - containerPort: {{ $value }}
+            name: {{ $key }}
+            protocol: TCP
+        {{- end }}
+        env:
+        {{- with .Values.loki.env }}
+        {{- toYaml . | nindent 12 }}
+        {{- end }}
+        volumeMounts:
+        - mountPath: "/etc/loki/local-config.yaml"
+          name: conf
+          subPath: local-config.yaml
+        - mountPath: "/opt/loki"
+          name: {{ .Values.loki.persistence.name }}
+        resources:
+          {{- toYaml .Values.loki.resources | nindent 12 }}
+        livenessProbe:
+          failureThreshold: 3
+          initialDelaySeconds: 5
+          periodSeconds: 30
+          successThreshold: 1
+          tcpSocket:
+            port: 3100
+          timeoutSeconds: 1
+        readinessProbe:
+          failureThreshold: 3
+          initialDelaySeconds: 5
+          periodSeconds: 30
+          successThreshold: 1
+          tcpSocket:
+            port: 3100
+          timeoutSeconds: 1
+        startupProbe:
+          failureThreshold: 3
+          initialDelaySeconds: 5
+          periodSeconds: 30
+          successThreshold: 1
+          tcpSocket:
+            port: 3100
+          timeoutSeconds: 1
+      volumes:
+      - name: conf
+        configMap:
+          name: {{ .Values.loki.name }}
+          defaultMode: 420
+      - name: {{ .Values.loki.persistence.name }}
+        persistentVolumeClaim:
+          claimName: {{ .Values.loki.persistence.name }}
+          readOnly: false
+{{- end }}

@@ -1,0 +1,118 @@
+# 副本数
+replicaCount: 1
+
+global:
+  ## @param global.imageRegistry Global Docker image registry
+  imageRegistry: ""
+  ## Optionally specify an array of imagePullSecrets.
+  ## Example:
+  ## imagePullSecrets:
+  ##   - myRegistryKeySecretName
+  imagePullSecrets: []
+
+image:
+  cdGateway:
+    name: ctyk-chronic-gateway
+    repository: 'k3s.harbor:8090/sync/yjk-release-docker/ctyk-chronic/ctyk-chronic-gateway'
+    tag: "1.1.26-r1"  ## TODO: 修改为实际版本号
+    port: 19901
+  cdAuth:
+    name: ctyk-chronic-auth
+    repository: 'k3s.harbor:8090/sync/yjk-release-docker/ctyk-chronic/ctyk-chronic-auth'
+    tag: "1.1.26-r1"   ## TODO: 修改为实际版本号
+    port: 19902
+  cdSystem:
+    name: ctyk-chronic-system
+    repository: 'k3s.harbor:8090/sync/yjk-release-docker/ctyk-chronic/ctyk-chronic-system'
+    tag: "1.1.26-r1"   ## TODO: 修改为实际版本号
+    port: 19903
+  cdBusiness:
+    name: ctyk-chronic-business
+    repository: 'k3s.harbor:8090/sync/yjk-release-docker/ctyk-chronic/ctyk-chronic-business'
+    tag: "1.1.26-r1"   ## TODO: 修改为实际版本号
+    port: 19907
+  cdForeign:
+    name: ctyk-chronic-foreign
+    repository: 'k3s.harbor:8090/sync/yjk-release-docker/ctyk-chronic/ctyk-chronic-foreign'
+    tag: "1.1.26-r1"   ## TODO: 修改为实际版本号
+    port: 19909
+  cdJob:
+    name: ctyk-chronic-job
+    repository: 'k3s.harbor:8090/sync/yjk-release-docker/ctyk-chronic/ctyk-chronic-job'
+    tag: "1.1.26-r1"   ## TODO: 修改为实际版本号
+    port: 9905
+  cdPointmall:
+    name: ctyk-chronic-pointmall
+    repository: 'k3s.harbor:8090/sync/yjk-release-docker/ctyk-chronic/ctyk-chronic-pointmall'
+    tag: "1.1.26-r1"  ## TODO: 修改为实际版本号
+    port: 19908
+  cdResource:
+    name: ctyk-chronic-resource
+    repository: 'k3s.harbor:8090/sync/yjk-release-docker/ctyk-chronic/ctyk-chronic-resource'
+    tag: "1.1.26-r1"  ## TODO: 修改为实际版本号
+    port: 19904
+  cdSeata:
+    name: ctyk-chronic-seata-server
+    repository: 'k3s.harbor:8090/sync/yjk-release-docker/ctyk-chronic/ctyk-chronic-seata-server'
+    tag: "1.1.26-r1"  ## TODO: 修改为实际版本号
+    port: 17091
+  cdSnailjob:
+    name: ctyk-chronic-snailjob-server
+    repository: 'k3s.harbor:8090/sync/yjk-release-docker/ctyk-chronic/ctyk-chronic-snailjob-server'
+    tag: "1.1.26-r1"  ## TODO: 修改为实际版本号
+    port: 17092
+    externalPort: 17092
+
+  cdSite:
+    name: ctyk-chronic-site
+    repository: 'k3s.harbor:8090/sync/yjk-release-docker/ctyk-chronic/ctyk-chronic-site'
+    tag: "1.1.25-r12"  ## TODO: 修改为实际版本号
+    port: 30100
+    service:
+      type: NodePort   # TODO: 设置对外暴漏服务类型,Ingress NodePort
+      ingressClassName: traefik  # TODO: 设置Ingress类型,默认为traefik
+      domain: "release.chronic.local"  # TODO: 设置Ingress域名, 灰度版设置为gray.yjk.local
+      externalPort: 30100  # 如果是NodePort，则需要设置基座对外暴漏端口号
+
+
+nacos:  #TODO: Nacos配置
+  username: "nacos"
+  password: "ctyk@yHJ!Uc45aBn"
+  namespace: "chronic"
+  host: "nacos.default.svc.cluster.local"
+  port: "8848"
+  group: "DEFAULT_GROUP"
+
+env:
+  - name: "TZ"
+    value: "Asia/Shanghai"
+  - name: PROFILE
+    value: "prod"
+  - name: JAVA_OPTS
+    value: "-server -Xms2G -Xmx2G -Xmn512M"
+
+skywalking:
+  enabled: false   #TODO: 开启skywalking，前提是已经部署过skywalking oap服务,否则设为false
+nameOverride: ""
+fullnameOverride: ""
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 2Gi
+  limits:
+    cpu: 4
+    memory: 3Gi
+
+updateStrategy:
+  type: RollingUpdate
+
+podAnnotations: {}
+
+podSecurityContext: {}
+
+securityContext: {}
+
+nodeSelector: {}
+
+tolerations: []

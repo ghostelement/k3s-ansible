@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.image.appMedicalinsurance.name }}
+  labels:
+    {{- include "ctyk-yjk.labels" . | nindent 4 }}
+  annotations:
+    prometheus.io/port: {{ .Values.image.appMedicalinsurance.port | quote }}  #prometheus监控端口
+    prometheus.io/spring: "true"
+    prometheus.io/path: "actuator/prometheus"
+spec:
+  type: ClusterIP
+  ports:
+    - port: {{ .Values.image.appMedicalinsurance.port }}
+      targetPort: {{ .Values.image.appMedicalinsurance.port }}
+      protocol: TCP
+      name: http
+  selector:
+    app: {{ .Values.image.appMedicalinsurance.name }}

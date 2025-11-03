@@ -1,0 +1,15 @@
+{{- if .Values.grafana.enabled }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ .Values.grafana.persistence.name }}
+spec:
+  accessModes:
+  {{- range .Values.grafana.persistence.accessModes }}
+    - {{ . | quote }}
+  {{- end }}
+  resources:
+    requests:
+      storage: {{ .Values.grafana.persistence.size }}
+  storageClassName: {{ .Values.grafana.persistence.storageClassName }}
+{{- end }}

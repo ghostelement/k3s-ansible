@@ -1,0 +1,5 @@
+apiVersion: v2
+description: 智慧医院前端其它服务(lis pacs等)
+name: ctyk-web-other
+type: application
+version: 1.7.0

@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.image.ygtAuth.name }}
+  labels:
+    {{- include "ctyk-yjk.labels" . | nindent 4 }}
+  annotations:
+    prometheus.io/port: {{ .Values.image.ygtAuth.port | quote }}  #prometheus监控端口
+    prometheus.io/spring: "true"
+    prometheus.io/path: "actuator/prometheus"
+spec:
+  type: ClusterIP
+  ports:
+    - port: {{ .Values.image.ygtAuth.port }}
+      targetPort: {{ .Values.image.ygtAuth.port }}
+      protocol: TCP
+      name: http
+  selector:
+    app: {{ .Values.image.ygtAuth.name }}

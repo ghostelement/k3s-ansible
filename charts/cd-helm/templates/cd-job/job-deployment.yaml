@@ -1,0 +1,133 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.image.cdJob.name }}
+  labels:
+    app: {{ .Values.image.cdJob.name }}
+    {{- include "ctyk-yjk.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ .Values.image.cdJob.name }}
+      {{- include "ctyk-yjk.selectorLabels" . | nindent 6 }}
+  strategy: {{- toYaml .Values.updateStrategy | nindent 4 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        app: {{ .Values.image.cdJob.name }}
+        {{- include "ctyk-yjk.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- include "ctyk-yjk.imagePullSecrets" . | nindent 6 }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Values.image.cdJob.name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.cdJob.repository }}:{{ .Values.image.cdJob.tag }}"
+          imagePullPolicy: IfNotPresent
+          {{- with .Values.env }}
+          env:
+            {{- toYaml . | nindent 12 }}
+          {{- end}}
+            - name: NACOS_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: nacos-config
+                  key: nacosHost
+            - name: NACOS_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: nacos-config
+                  key: nacosPort
+            - name: NACOS_NAMESPACE
+              valueFrom:
+                configMapKeyRef:
+                  name: nacos-config
+                  key: nacosNamespace
+            - name: NACOS_USERNAME
+              valueFrom:
+                configMapKeyRef:
+                  name: nacos-config
+                  key: nacosUsername
+            - name: NACOS_GROUP
+              valueFrom:
+                configMapKeyRef:
+                  name: nacos-config
+                  key: nacosGroup
+            - name: NACOS_PASSWORD
+              valueFrom:
+                configMapKeyRef:
+                  name: nacos-config
+                  key: nacosPassword
+          {{- if .Values.skywalking.enabled }}
+            - name: SKY_AGENT
+              value: "-javaagent:/skywalking/skywalking-agent/skywalking-agent.jar -Dskywalking.agent.service_name={{ .Values.image.cdJob.name }}"
+            - name: SKY_SERVER
+              value: '-Dskywalking.collector.backend_service=skywalking-oap.default.svc.cluster.local:11800'
+          {{- end }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.image.cdJob.port }}
+              protocol: TCP
+          livenessProbe:
+            failureThreshold: 3
+            successThreshold: 1
+            tcpSocket:
+              port: {{ .Values.image.cdJob.port }}
+            initialDelaySeconds: 30
+            timeoutSeconds: 1 
+            periodSeconds: 30
+          readinessProbe:
+            failureThreshold: 3
+            successThreshold: 1
+            initialDelaySeconds: 30
+            timeoutSeconds: 1
+            periodSeconds: 30
+            tcpSocket:
+              port: {{ .Values.image.cdJob.port }}
+          startupProbe:
+            failureThreshold: 3
+            successThreshold: 1
+            timeoutSeconds: 1
+            periodSeconds: 30
+            tcpSocket:
+              port: {{ .Values.image.cdJob.port }}
+            initialDelaySeconds: 30
+          resources:
+          {{- toYaml .Values.resources | nindent 12 }}
+          volumeMounts:
+            #容器内日志目录
+            - name: log
+              mountPath: /app/logs
+      volumes:
+        #挂载到宿主机日志持久化目录
+        - name: log
+          hostPath:
+            path: "/data/app_logs/{{ .Release.Namespace }}/{{ .Values.image.cdJob.name }}"
+            type: DirectoryOrCreate
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: app
+                      operator: In
+                      values:
+                        - {{ .Values.image.cdJob.name }}
+                topologyKey: kubernetes.io/hostname
+              weight: 60
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

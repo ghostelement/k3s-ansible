@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.image.dcwriter.name }}
+  labels:
+    {{- include "ctyk-yjk.labels" . | nindent 4 }}
+spec:
+  type: ClusterIP
+  ports:
+    - port: {{ .Values.image.dcwriter.port }}
+      targetPort: {{ .Values.image.dcwriter.port }}
+      protocol: TCP
+      name: http
+  selector:
+    app: {{ .Values.image.dcwriter.name }}

@@ -1,0 +1,71 @@
+# 副本数
+replicaCount: 1
+
+global:
+  ## @param global.imageRegistry Global Docker image registry
+  imageRegistry: ""
+  ## Optionally specify an array of imagePullSecrets.
+  ## Example:
+  ## imagePullSecrets:
+  ##   - myRegistryKeySecretName
+  imagePullSecrets: []
+
+image:
+  businessRis:
+    name: ctyk-middle-business-ris
+    repository: 'k3s.harbor:8090/sync/yjk-release-docker/smart-hospital/server/ctyk-yjk-middle-business-ris'
+    tag: "v1.7.22-release-tag"   ## TODO: 修改为实际版本号
+    port: 20404
+  pacsStorage:
+    name: ctyk-business-pacs-storage
+    repository: 'k3s.harbor:8090/sync/yjk-release-docker/smart-hospital/server/ctyk-yjk-middle-business-pacs-storage'
+    tag: "v1.7.6-release-tag"   ## TODO: 修改为实际版本号
+    port: 20430
+    tcpPort: 20400
+    nfsServer: "192.168.1.1"
+    nfsPath: "/data/nfs/pacs-ssd"
+  pacsProcessor:
+    name: ctyk-pacs-app-processor
+    repository: 'k3s.harbor:8090/sync/yjk-release-docker/smart-hospital/server/ctyk-yjk-pacs-app-processor'
+    tag: "v1.7.6-release-tag"
+    port: 20431
+  appRis:
+    name: ctyk-ris-app-ris
+    repository: 'k3s.harbor:8090/sync/yjk-release-docker/smart-hospital/server/ctyk-yjk-ris-app-ris'
+    tag: "v1.7.22-release-tag"
+    port: 20403
+
+env:
+  - name: "TZ"
+    value: "Asia/Shanghai"
+  - name: PROFILE
+    value: "prod"
+  - name: JAVA_OPTS
+    value: "-server -Xms1G -Xmx1G -Xmn512M"
+
+isGray: "false"  # TODO: 是否为灰度版本,灰度版本会在变量中添加Dyk_gray=true
+skywalking:
+  enabled: false   #TODO: 开启skywalking，前提是已经部署过skywalking oap服务,否则设为false
+nameOverride: ""
+fullnameOverride: ""
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 1Gi
+  limits:
+    cpu: 4
+    memory: 4Gi
+
+updateStrategy:
+  type: RollingUpdate
+
+podAnnotations: {}
+
+podSecurityContext: {}
+
+securityContext: {}
+
+nodeSelector: {}
+
+tolerations: []

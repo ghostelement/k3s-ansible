@@ -1,0 +1,117 @@
+# 副本数
+replicaCount: 1
+
+global:
+  ## @param global.imageRegistry Global Docker image registry
+  imageRegistry: ""
+  ## Optionally specify an array of imagePullSecrets.
+  ## Example:
+  ## imagePullSecrets:
+  ##   - myRegistryKeySecretName
+  imagePullSecrets: []
+
+image:
+  iglGateway:
+    name: nh-server-gateway
+    repository: 'k3s.harbor:8090/sync/yjk-release-docker/nh-integration/server/nh-server-gateway'
+    tag: "2.3.20"  ## TODO: 修改为实际版本号
+    port: 9999
+  iglAuth:
+    name: nh-server-auth
+    repository: 'k3s.harbor:8090/sync/yjk-release-docker/nh-integration/server/nh-server-auth'
+    tag: "2.3.20"   ## TODO: 修改为实际版本号
+    port: 3000
+  iglUpms:
+    name: nh-server-upms
+    repository: 'k3s.harbor:8090/sync/yjk-release-docker/nh-integration/server/nh-server-upms'
+    tag: "2.3.20"   ## TODO: 修改为实际版本号
+    port: 4000
+  iglSxzz:
+    name: nh-server-sxzz
+    repository: 'k3s.harbor:8090/sync/yjk-release-docker/nh-integration/server/nh-server-sxzz'
+    tag: "2.3.51"   ## TODO: 修改为实际版本号
+    port: 9004
+  iglYchz:
+    name: nh-server-telemedicine
+    repository: 'k3s.harbor:8090/sync/yjk-release-docker/nh-integration/server/nh-server-telemedicine'
+    tag: "2.3.57"   ## TODO: 修改为实际版本号
+    port: 9005
+  iglDps:
+    name: nh-server-middleware-medical-dps
+    repository: 'k3s.harbor:8090/sync/yjk-release-docker/nh-integration/server/nh-server-middleware-medical-dps'
+    tag: "1.0.32"   ## TODO: 修改为实际版本号
+    port: 1777
+  
+
+  iglSite:
+    name: nh-site-main
+    repository: 'k3s.harbor:8090/sync/yjk-release-docker/nh-integration/site/nh-site-main'
+    tag: "2.3.33"  ## TODO: 修改为实际版本号
+    port: 15100
+    service:
+      type: NodePort   # TODO: 设置对外暴漏服务类型,Ingress NodePort
+      ingressClassName: traefik  # TODO: 设置Ingress类型,默认为traefik
+      domain: "release.igl.local"  # TODO: 设置Ingress域名, 灰度版设置为gray.yjk.local
+      externalPort: 15100  # 如果是NodePort，则需要设置基座对外暴漏端口号
+  iglSiteApp:
+    name: nh-site-app
+    repository: 'k3s.harbor:8090/sync/yjk-release-docker/nh-integration/site/nh-site-app'
+    tag: "2.3.21"  ## TODO: 修改为实际版本号
+    port: 80
+  iglSiteSxzz:
+    name: nh-site-sxzz
+    repository: 'k3s.harbor:8090/sync/yjk-release-docker/nh-integration/site/nh-site-sxzz'
+    tag: "2.3.62"  ## TODO: 修改为实际版本号
+    port: 80
+  iglSiteYchz:
+    name: nh-site-ychz
+    repository: 'k3s.harbor:8090/sync/yjk-release-docker/nh-integration/site/nh-site-ychz'
+    tag: "2.3.59"  ## TODO: 修改为实际版本号
+    port: 80
+
+nacos:  #TODO: Nacos配置
+  username: "nacos"
+  password: "ctyk@yHJ!Uc45aBn"
+  namespace: "igl"
+  host: "nacos.default.svc.cluster.local"
+  port: "8848"
+  group: "DEFAULT_GROUP"
+
+#TODO: 部署业务模块开关
+sxzz: true
+ychz: true
+dps: true
+
+env:
+  - name: "TZ"
+    value: "Asia/Shanghai"
+  - name: PROFILE
+    value: "prod"
+  - name: JAVA_OPTS
+    value: "-server -Xms2G -Xmx2G -Xmn512M"
+
+skywalking:
+  enabled: false   #TODO: 开启skywalking，前提是已经部署过skywalking oap服务,否则设为false
+nameOverride: ""
+fullnameOverride: ""
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 2Gi
+  limits:
+    cpu: 4
+    memory: 3Gi
+
+updateStrategy:
+  type: RollingUpdate
+
+podAnnotations: {}
+
+podSecurityContext: {}
+
+securityContext: {}
+
+nodeSelector: {}
+
+tolerations: []

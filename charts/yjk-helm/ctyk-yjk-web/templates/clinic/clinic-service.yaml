@@ -1,0 +1,17 @@
+{{- if .Values.modules.clinic.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.image.clinic.name }}
+  labels:
+    {{- include "ctyk-yjk.labels" . | nindent 4 }}
+spec:
+  type: ClusterIP
+  ports:
+    - port: {{ .Values.image.clinic.port }}
+      targetPort: {{ .Values.image.clinic.port }}
+      protocol: TCP
+      name: http
+  selector:
+    app: {{ .Values.image.clinic.name }}
+{{- end }}

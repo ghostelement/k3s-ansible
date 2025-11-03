@@ -1,0 +1,236 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.image.main.name }}
+  labels:
+    app: {{ .Values.image.main.name }}
+    {{- include "ctyk-yjk.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ .Values.image.main.name }}
+      {{- include "ctyk-yjk.selectorLabels" . | nindent 6 }}
+  strategy: {{- toYaml .Values.updateStrategy | nindent 4 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        app: {{ .Values.image.main.name }}
+        {{- include "ctyk-yjk.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- include "ctyk-yjk.imagePullSecrets" . | nindent 6 }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Values.image.main.name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.main.repository }}:{{ .Values.image.main.tag }}"
+          imagePullPolicy: IfNotPresent
+          {{- with .Values.env }}
+          env:
+            {{- toYaml . | nindent 12 }}
+          {{- end}}
+            # 基础模块
+            - name: gateway_comm
+              value: "{{ .Values.image.system.name }}:{{ .Values.image.system.port }}"
+            - name: gateway_dcwriter
+              value: "{{ .Values.image.dcwriter.name }}:{{ .Values.image.dcwriter.port }}"
+            - name: gateway_ctreport
+              value: "{{ .Values.image.ctreport.name }}:{{ .Values.image.ctreport.port }}"
+            # 业务模块
+            - name: gateway_mzemr
+            {{- if .Values.modules.mzemr.enabled }}
+              value: "{{ .Values.image.mzemr.name }}:{{ .Values.image.mzemr.port }}"
+            {{- else }}
+              value: "127.0.0.1:80"
+            {{- end }}
+            - name: gateway_zyhos
+            {{- if .Values.modules.zyhos.enabled }}
+              value: "{{ .Values.image.zyhos.name }}:{{ .Values.image.zyhos.port }}"
+            {{- else }}
+              value: "127.0.0.1:80"
+            {{- end }}
+            - name: gateway_mzcharge
+            {{- if .Values.modules.mzcharge.enabled }}
+              value: "{{ .Values.image.mzcharge.name }}:{{ .Values.image.mzcharge.port }}"
+            {{- else }}
+              value: "127.0.0.1:80"
+            {{- end }}
+            - name: gateway_costmanage
+            {{- if .Values.modules.costmanage.enabled }}
+              value: "{{ .Values.image.costmanage.name }}:{{ .Values.image.costmanage.port }}"
+            {{- else }}
+              value: "127.0.0.1:80"
+            {{- end }}
+            - name: gateway_hsz
+            {{- if .Values.modules.hsz.enabled }}
+              value: "{{ .Values.image.hsz.name }}:{{ .Values.image.hsz.port }}"
+            {{- else }}
+              value: "127.0.0.1:80"
+            {{- end }}
+            - name: gateway_nursedoc
+            {{- if .Values.modules.nursedoc.enabled }}
+              value: "{{ .Values.image.nursedoc.name }}:{{ .Values.image.nursedoc.port }}"
+            {{- else }}
+              value: "127.0.0.1:80"
+            {{- end }}
+            - name: gateway_pharmacy
+            {{- if .Values.modules.pharmacy.enabled }}
+              value: "{{ .Values.image.pharmacy.name }}:{{ .Values.image.pharmacy.port }}"
+            {{- else }}
+              value: "127.0.0.1:80"
+            {{- end }}
+            - name: gateway_zyemr
+            {{- if .Values.modules.zyemr.enabled }}
+              value: "{{ .Values.image.zyemr.name }}:{{ .Values.image.zyemr.port }}"
+            {{- else }}
+              value: "127.0.0.1:80"
+            {{- end }}
+            - name: gateway_cpms
+            {{- if .Values.modules.cpms.enabled }}
+              value: "{{ .Values.image.cpms.name }}:{{ .Values.image.cpms.port }}"
+            {{- else }}
+              value: "127.0.0.1:80"
+            {{- end }}
+            - name: gateway_drugstorage
+            {{- if .Values.modules.drugstorage.enabled }}
+              value: "{{ .Values.image.drugstorage.name }}:{{ .Values.image.drugstorage.port }}"
+            {{- else }}
+              value: "127.0.0.1:80"
+            {{- end }}
+            - name: gateway_medicalinsurance
+            {{- if .Values.modules.medicalinsurance.enabled }}
+              value: "{{ .Values.image.medicalinsurance.name }}:{{ .Values.image.medicalinsurance.port }}"
+            {{- else }}
+              value: "127.0.0.1:80"
+            {{- end }}
+            - name: gateway_material
+            {{- if .Values.modules.material.enabled }}
+              value: "{{ .Values.image.material.name }}:{{ .Values.image.material.port }}"
+            {{- else }}
+              value: "127.0.0.1:80"
+            {{- end }}
+            - name: gateway_cmis
+            {{- if .Values.modules.cmis.enabled }}
+              value: "{{ .Values.image.cmis.name }}:{{ .Values.image.cmis.port }}"
+            {{- else }}
+              value: "127.0.0.1:80"
+            {{- end }}
+            - name: gateway_amc
+            {{- if .Values.modules.amc.enabled }}
+              value: "{{ .Values.image.amc.name }}:{{ .Values.image.amc.port }}"
+            {{- else }}
+              value: "127.0.0.1:80"
+            {{- end }}
+            - name: gateway_tigcoac
+            {{- if .Values.modules.tigcoac.enabled }}
+              value: "{{ .Values.image.tigcoac.name }}:{{ .Values.image.tigcoac.port }}"
+            {{- else }}
+              value: "127.0.0.1:80"
+            {{- end }}
+            - name: gateway_tigclis
+            {{- if .Values.modules.tigcoac.enabled }}
+              value: "{{ .Values.image.tigcoac.name }}:{{ .Values.image.tigcoac.port }}"
+            {{- else }}
+              value: "127.0.0.1:80"
+            {{- end }}
+            - name: gateway_tigcdrug
+            {{- if .Values.modules.tigcoac.enabled }}
+              value: "{{ .Values.image.tigcoac.name }}:{{ .Values.image.tigcoac.port }}"
+            {{- else }}
+              value: "127.0.0.1:80"
+            {{- end }}
+            - name: gateway_tigcpacs
+            {{- if .Values.modules.tigcoac.enabled }}
+              value: "{{ .Values.image.tigcoac.name }}:{{ .Values.image.tigcoac.port }}"
+            {{- else }}
+              value: "127.0.0.1:80"
+            {{- end }}
+            - name: gateway_csess
+            {{- if .Values.modules.csess.enabled }}
+              value: "{{ .Values.image.csess.name }}:{{ .Values.image.csess.port }}"
+            {{- else }}
+              value: "127.0.0.1:80"
+            {{- end }}
+            - name: gateway_pems
+            {{- if .Values.modules.pems.enabled }}
+              value: "{{ .Values.image.pems.name }}:{{ .Values.image.pems.port }}"
+            {{- else }}
+              value: "127.0.0.1:80"
+            {{- end }}
+
+            - name: gateway_lis
+            {{- if .Values.modules.lis.enabled }}
+              value: "{{ .Values.image.lis.name }}:{{ .Values.image.lis.port }}"
+            {{- else }}
+              value: "127.0.0.1:80"
+            {{- end }}
+            - name: gateway_pacs
+            {{- if .Values.modules.pacs.enabled }}
+              value: "{{ .Values.image.pacs.name }}:{{ .Values.image.pacs.port }}"
+            {{- else }}
+              value: "127.0.0.1:80"
+            {{- end }}
+            - name: gateway_dqs
+            {{- if .Values.modules.dqs.enabled }}
+              value: "{{ .Values.image.dqs.name }}:{{ .Values.image.dqs.port }}"
+            {{- else }}
+              value: "127.0.0.1:80"
+            {{- end }}
+            
+
+          ports:
+            - name: http
+              containerPort: {{ .Values.image.main.port }}
+              protocol: TCP
+          livenessProbe:
+            failureThreshold: 3
+            successThreshold: 1
+            tcpSocket:
+              port: {{ .Values.image.main.port }}
+            initialDelaySeconds: 5
+            timeoutSeconds: 1 
+            periodSeconds: 10
+          readinessProbe:
+            failureThreshold: 3
+            successThreshold: 1
+            initialDelaySeconds: 5
+            timeoutSeconds: 1
+            periodSeconds: 10
+            tcpSocket:
+              port: {{ .Values.image.main.port }}
+          startupProbe:
+            failureThreshold: 3
+            successThreshold: 1
+            timeoutSeconds: 1
+            periodSeconds: 10
+            tcpSocket:
+              port: {{ .Values.image.main.port }}
+            initialDelaySeconds: 5
+          resources:
+          {{- toYaml .Values.resources | nindent 12 }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: app
+                      operator: In
+                      values:
+                        - {{ .Values.image.main.name }}
+                topologyKey: kubernetes.io/hostname
+              weight: 60
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

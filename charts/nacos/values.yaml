@@ -1,0 +1,37 @@
+global:
+  ## @param global.imageRegistry Global Docker image registry
+  imageRegistry: ""
+  ## Optionally specify an array of imagePullSecrets.
+  ## Example:
+  ## imagePullSecrets:
+  ##   - myRegistryKeySecretName
+  imagePullSecrets: []
+db:
+  #TODO: 修改为实际数据库地址、账户
+  host: "192.168.0.1"
+  port: "4000"
+  root_username: "root"
+  root_password: "admin123"
+  db_name: "nacos_config"
+image:
+  nacos:
+    name: nacos
+    repository: 'k3s.harbor:8090/library/nacos-server'
+    tag: "v2.4.3"   ## TODO: 修改为实际版本号
+env:
+  - name: JVM_XMS
+    value: 4g
+  - name: JVM_XMX
+    value: 4g
+
+nameOverride: ""
+fullnameOverride: ""
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 4Gi
+  limits:
+    cpu: 4
+    memory: 5Gi
+

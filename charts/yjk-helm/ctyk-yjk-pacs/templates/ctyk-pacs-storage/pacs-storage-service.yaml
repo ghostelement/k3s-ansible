@@ -1,0 +1,41 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.image.pacsStorage.name }}
+  labels:
+    {{- include "ctyk-yjk.labels" . | nindent 4 }}
+  annotations:
+    prometheus.io/port: {{ .Values.image.pacsStorage.port | quote }}  #prometheus监控端口
+    prometheus.io/spring: "true"
+    prometheus.io/path: "actuator/prometheus"
+spec:
+  type: ClusterIP
+  ports:
+    - port: {{ .Values.image.pacsStorage.port }}
+      targetPort: {{ .Values.image.pacsStorage.port }}
+      protocol: TCP
+      name: http
+  selector:
+    app: {{ .Values.image.pacsStorage.name }}
+
+---
+# TCP端口服务代理
+{{- if eq .Values.isGray "false" }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: "{{ .Values.image.pacsStorage.name }}-tcp"
+  labels:
+    {{- include "ctyk-yjk.labels" . | nindent 4 }}
+spec:
+  type: NodePort
+  ports:
+    - port: {{ .Values.image.pacsStorage.tcpPort }}
+      targetPort: {{ .Values.image.pacsStorage.tcpPort }}
+      nodePort: {{ .Values.image.pacsStorage.tcpPort }}
+      protocol: TCP
+      name: tcp
+  selector:
+    app: {{ .Values.image.pacsStorage.name }}
+{{- end }}

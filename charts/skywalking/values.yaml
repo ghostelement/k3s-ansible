@@ -1,0 +1,108 @@
+# Default values for skywalking.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+oap:
+  name: skywalking-oap
+  image:
+    repository: k3s.harbor:8090/library/skywalking-oap
+    tag: '9.7.0'
+    imagePullPolicy: IfNotPresent
+  env:
+    - name: TZ
+      value: Asia/Shanghai
+    - name: SW_STORAGE
+      value: elasticsearch
+    - name: SW_CORE_RECORD_DATA_TTL
+      value: '180'
+    - name: SW_CORE_METRICS_DATA_TTL
+      value: '180'
+    - name: SW_STORAGE_ES_CLUSTER_NODES
+      value: elasticsearch-sky:9200
+    - name: JAVA_OPTS
+      value: -Xms4096m -Xmx4096m
+  ports:
+    grpc: 11800
+    rest: 12800
+  resources:
+    requests:
+      memory: 4Gi
+      cpu: 200m
+    limits:
+      memory: 5Gi
+      cpu: 4
+  service:
+    type: ClusterIP
+    # add annotations to the oap service
+    annotations: {}
+
+ui:
+  name: skywalking-ui
+  image:
+    repository: k3s.harbor:8090/library/skywalking-ui
+    tag: '9.7.0'
+    imagePullPolicy: IfNotPresent
+  ports:
+    http: 8080
+  env:
+    - name: TZ
+      value: Asia/Shanghai
+    - name: SW_OAP_ADDRESS
+      value: http://skywalking-oap:12800
+  resources:
+    requests:
+      memory: 512Mi
+      cpu: 200m
+    limits:
+      memory: 1Gi
+      cpu: 1
+# skywalking-ui 鉴权代理
+uiNginx:
+  name: skywalking-ui-nginx
+  image:
+    repository: k3s.harbor:8090/library/skywalking-ui-ng
+    tag: '1.0.0'
+    imagePullPolicy: IfNotPresent
+  ports:
+    http: 49898
+  resources:
+    requests:
+      memory: 64Mi
+      cpu: 200m
+    limits:
+      memory: 512Mi
+      cpu: 2000m
+
+es:
+  enabled: true
+  name: elasticsearch-sky
+  image:
+    repository: k3s.harbor:8090/library/elasticsearch
+    tag: '7.17.25-p12'
+    imagePullPolicy: IfNotPresent
+  ports:
+    http: 9200
+  env:
+    - name: TZ
+      value: Asia/Shanghai
+    - name: discovery.type
+      value: single-node
+    - name: cluster.name
+      value: elasticsearch-sky
+    - name: ES_JAVA_OPTS
+      value: -Xms4g -Xmx4g
+  resources:
+    requests:
+      memory: 4Gi
+    limits:
+      memory: 5Gi
+  service:
+    type: ClusterIP
+    annotations: {}
+  persistence:
+    name: elasticsearch-sky-data
+    storageClassName: nfs-storage
+    accessModes:
+      - ReadWriteOnce
+    size: 10Gi
+  

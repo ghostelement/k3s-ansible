@@ -1,0 +1,105 @@
+# 副本数
+replicaCount: 1
+
+global:
+  ## @param global.imageRegistry Global Docker image registry
+  imageRegistry: ""
+  ## Optionally specify an array of imagePullSecrets.
+  ## Example:
+  ## imagePullSecrets:
+  ##   - myRegistryKeySecretName
+  imagePullSecrets: []
+
+image:
+  # LIS
+  lis:
+    name: ctyk-yjk-lis-web-lis
+    repository: 'k3s.harbor:8090/sync/yjk-release-docker/smart-hospital/web/ctyk-yjk-lis-web-lis'
+    tag: "v1.7.5-release-tag"   ## TODO: 修改为实际版本号
+    port: 80
+  # PACS
+  pacs:
+    name: ctyk-yjk-pacs-web-pacs
+    repository: 'k3s.harbor:8090/sync/yjk-release-docker/smart-hospital/web/ctyk-yjk-pacs-web-pacs'
+    tag: "v1.7.3-release-tag"   ## TODO: 修改为实际版本号
+    port: 80
+  pacsViewer:
+    name: ctyk-yjk-pacs-web-viewer
+    repository: 'k3s.harbor:8090/sync/yjk-release-docker/smart-hospital/web/ctyk-yjk-pacs-web-viewer'
+    tag: "v1.7.1-release-tag"
+    port: 80
+  # 分诊叫号
+  tigcoac:
+    name: ctyk-yjk-web-tigc
+    repository: 'k3s.harbor:8090/sync/yjk-release-docker/smart-hospital/web/ctyk-yjk-web-tigc'
+    tag: "v1.7.0-release-tag"   ## TODO: 修改为实际版本号
+    port: 80
+  # 预约管理中心
+  amc:
+    name: ctyk-yjk-amc-web-amc
+    repository: 'k3s.harbor:8090/sync/yjk-release-docker/smart-hospital/web/ctyk-yjk-amc-web-amc'
+    tag: "v1.7.0-release-tag"   ## TODO: 修改为实际版本号
+    port: 80
+  # 院长查询 
+  dqs:
+    name: ctyk-yjk-web-dqs
+    repository: 'k3s.harbor:8090/sync/yjk-release-docker/smart-hospital/web/ctyk-yjk-dqs-web-dqs'
+    tag: "v1.7.0-release-tag"   ## TODO: 修改为实际版本号
+    port: 80
+
+service:
+  type: Ingress   # TODO: 设置对外暴漏服务类型,Ingress NodePort
+  ingressClassName: traefik  # TODO: 设置Ingress类型,默认为traefik
+  domain: "release.yjk.local"  # TODO: 设置Ingress域名, 灰度版设置为gray.yjk.local
+  externalPort: 31000  # 如果是NodePort，则需要设置基座对外暴漏端口号
+
+env:
+  - name: "gateway_1"
+    value: "ctyk-gateway.ctyk-yjk.svc.cluster.local:10007"   #TODO: 设置网关地址,默认同命名空间不需改动
+  - name: "gateway_websocket"
+    value: "ctyk-websocket.ctyk-yjk.svc.cluster.local:20111"
+
+modules:  #TODO: 子模块，不需要的前端子模块可设为false
+  # LIS
+  lis:
+    enabled: true
+  # PACS
+  pacs:
+    enabled: true
+  pacsViewer:
+    enabled: true
+  # 分诊叫号
+  tigcoac:
+    enabled: true
+  # 预约管理中心
+  amc:
+    enabled: true
+  # 院长查询  
+  dqs:
+    enabled: true
+
+
+
+nameOverride: ""
+fullnameOverride: ""
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 256Mi
+  limits:
+    cpu: 4
+    memory: 1Gi
+
+updateStrategy:
+  type: RollingUpdate
+
+podAnnotations: {}
+
+podSecurityContext: {}
+
+securityContext: {}
+
+nodeSelector: {}
+
+tolerations: []

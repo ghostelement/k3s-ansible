@@ -1,0 +1,39 @@
+{{- if .Values.grafana.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  annotations: {}
+  labels: {}
+  name: {{ .Values.grafana.name }}
+data:
+  datasources.yaml: |-
+    apiVersion: 1
+    datasources:
+      - name: Prometheus
+        type: prometheus
+        access: proxy
+        orgId: 1
+        {{- if .Values.prometheus.remoteWrite.enabled }}
+        url: "{{ .Values.prometheus.remoteWrite.remoteUrl }}"
+        basicAuth: true
+        basicAuthUser: {{ .Values.prometheus.remoteWrite.username }}
+        secureJsonData:
+          basicAuthPassword: {{ .Values.prometheus.remoteWrite.password }}
+        {{- else }}
+        url: "http://{{ .Values.prometheus.name }}:9090"
+        basicAuth: false
+        {{- end }}
+        isDefault: true
+        editable: true
+        uid: prometheus-local-8fa23be1ff5f
+      {{- if .Values.loki.enabled }}
+      - name: Loki
+        type: loki
+        access: proxy
+        orgId: 1
+        url: "http://{{ .Values.loki.name }}:3100"
+        basicAuth: false
+        isDefault: false
+        editable: true
+      {{- end }}
+{{- end }}

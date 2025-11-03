@@ -1,0 +1,21 @@
+{{- if .Values.mdm }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.image.ygtMdm.name }}
+  labels:
+    {{- include "ctyk-yjk.labels" . | nindent 4 }}
+  annotations:
+    prometheus.io/port: {{ .Values.image.ygtMdm.port | quote }}  #prometheus监控端口
+    prometheus.io/spring: "true"
+    prometheus.io/path: "actuator/prometheus"
+spec:
+  type: ClusterIP
+  ports:
+    - port: {{ .Values.image.ygtMdm.port }}
+      targetPort: {{ .Values.image.ygtMdm.port }}
+      protocol: TCP
+      name: http
+  selector:
+    app: {{ .Values.image.ygtMdm.name }}
+{{- end }}

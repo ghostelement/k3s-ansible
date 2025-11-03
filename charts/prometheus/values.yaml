@@ -1,0 +1,173 @@
+# Default values for prometheus.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+prometheus:
+  enabled: true
+  name: prometheus
+  targetHost:  # TODO: 被监控主机IP
+    - 127.0.0.1:9100
+  image:
+    repository: k3s.harbor:8090/library/prometheus
+    tag: '2.52.0'
+    pullPolicy: IfNotPresent
+  ports:
+    http: 9090
+  args:
+    - "--config.file=/etc/prometheus/prometheus.yml"
+    - "--storage.tsdb.path=/prometheus"
+    - "--web.enable-lifecycle"
+    - "--web.console.libraries=/usr/share/prometheus/console_libraries"
+    - "--web.console.templates=/usr/share/prometheus/consoles"
+  env: {}
+  resources:
+    requests:
+      cpu: 100m
+      memory: 512Mi
+    limits:
+      cpu: 2000m
+      memory: 4Gi
+  serviceAccountName: prometheus
+  persistence:
+    name: prometheus-data
+    storageClassName: nfs-storage
+    accessModes:
+      - ReadWriteOnce
+    size: 10Gi
+  service:
+    type: ClusterIP
+    annotations: {}
+  annotations: {}
+
+  remoteWrite:
+    enabled: true
+    remoteUrl: http://127.0.0.1:8428
+    username: admin
+    password: 123456
+
+# 告警管理
+alertmanager:
+  enabled: true
+  name: alertmanager
+  wechatBot: http://127.0.0.1:9080/wechatbot  # TODO: 代理告警机器人地址,运维服务器ip
+  image:
+    repository: k3s.harbor:8090/library/alertmanager
+    tag: '0.27.0'
+    pullPolicy: IfNotPresent
+  ports:
+    http: 9093
+  env: {}
+  resources:
+    requests:
+      cpu: 100m
+      memory: 64Mi
+    limits:
+      cpu: 2000m
+      memory: 512Mi
+  service:
+    type: ClusterIP
+    annotations: {}
+  annotations: {}
+
+# kube-state-metrics
+metrics:
+  enabled: true
+  name: kube-state-metrics
+  image:
+    repository: k3s.harbor:8090/library/kube-state-metrics
+    tag: '2.15.0'
+    pullPolicy: IfNotPresent
+  ports:
+    http: 8080
+    telemetry: 8081
+  env: {}
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 2000m
+      memory: 512Mi
+  service:
+    type: ClusterIP
+    annotations: {}
+  serviceAccountName: kube-state-metrics
+  annotations: {}
+
+# Grafana
+grafana:
+  enabled: true
+  name: grafana
+  image:
+    repository: k3s.harbor:8090/library/grafana
+    tag: '10.3.12'
+    pullPolicy: IfNotPresent
+  ports:
+    http: 3000
+  env: {}
+  resources:
+    requests:
+      cpu: 100m
+      memory: 512Mi
+    limits:
+      cpu: 2000m
+      memory: 2Gi
+  persistence:
+    name: grafana-data
+    storageClassName: nfs-storage
+    accessModes:
+      - ReadWriteOnce
+    size: 5Gi
+  service:
+    type: NodePort
+    annotations: {}
+  annotations: {}
+
+# node-exporter
+node:
+  enabled: true
+  name: node-exporter
+  image:
+    repository: k3s.harbor:8090/library/node-exporter
+    tag: 'v1.9.1'
+    pullPolicy: IfNotPresent
+
+# loki日志收集
+loki:
+  enabled: true
+  name: loki
+  image:
+    repository: k3s.harbor:8090/library/loki
+    tag: '2.7.7'
+    pullPolicy: IfNotPresent
+  ports:
+    http: 3100
+    grpc: 3110
+  env: {}
+  resources:
+    requests:
+      cpu: 100m
+      memory: 1Gi
+    limits:
+      cpu: 4
+      memory: 4Gi
+  persistence:
+    name: loki-data
+    storageClassName: nfs-storage
+    accessModes:
+      - ReadWriteOnce
+    size: 10Gi
+  service:
+    type: ClusterIP
+    annotations: {}
+  annotations: {}
+
+# promtail日志收集器
+promtail:
+  enabled: true
+  name: promtail
+  image:
+    repository: k3s.harbor:8090/library/promtail
+    tag: '2.7.7'
+    pullPolicy: IfNotPresent
+  serviceAccountName: promtail

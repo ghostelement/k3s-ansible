@@ -1,0 +1,21 @@
+{{- if eq .Values.service.type "Ingress" }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ .Values.image.system.name }}
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: web
+spec:
+  ingressClassName: {{ .Values.service.ingressClassName }}
+  rules:
+  - host: {{ .Values.service.domain }}
+    http:
+      paths:
+      - path: /comm
+        pathType: Prefix
+        backend:
+          service:
+            name: {{ .Values.image.system.name }}  ## 后端service服务名称
+            port:
+              number: {{ .Values.image.system.port }}
+{{- end }}

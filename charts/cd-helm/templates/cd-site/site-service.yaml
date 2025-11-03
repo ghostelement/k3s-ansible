@@ -1,0 +1,25 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.image.cdSite.name }}
+  labels:
+    {{- include "ctyk-yjk.labels" . | nindent 4 }}
+spec:
+  {{- if eq .Values.image.cdSite.service.type "NodePort" }}
+  type: NodePort
+  ports:
+    - port: {{ .Values.image.cdSite.port }}
+      targetPort: {{ .Values.image.cdSite.port }}
+      nodePort: {{ .Values.image.cdSite.service.externalPort }}
+      protocol: TCP
+      name: http
+  {{- else }}
+  type: ClusterIP
+  ports:
+    - port: {{ .Values.image.cdSite.port }}
+      targetPort: {{ .Values.image.cdSite.port }}
+      protocol: TCP
+      name: http
+  {{- end }}
+  selector:
+    app: {{ .Values.image.cdSite.name }}

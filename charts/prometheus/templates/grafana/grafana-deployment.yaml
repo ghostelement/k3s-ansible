@@ -1,0 +1,80 @@
+{{- if .Values.grafana.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    name: {{ .Values.grafana.name }}
+  name: {{ .Values.grafana.name }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ .Values.grafana.name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.grafana.name }}
+    spec:
+      containers:
+        - image: "{{ .Values.grafana.image.repository }}:{{ .Values.grafana.image.tag }}"
+          name: {{ .Values.grafana.name }}
+          ports:
+          {{- range $key, $value := .Values.grafana.ports }}
+            - containerPort: {{ $value }}
+              name: {{ $key }}
+              protocol: TCP
+          {{- end }}
+          env:
+            - name: GF_USERS_DEFAULT_LANGUAGE
+              value: zh-Hans
+          {{- with .Values.grafana.env }}
+          {{- toYaml . | nindent 12 }}
+          {{- end }}
+          livenessProbe:
+            failureThreshold: 3
+            initialDelaySeconds: 10
+            periodSeconds: 30
+            successThreshold: 1
+            tcpSocket:
+              port: 3000
+            timeoutSeconds: 1
+          readinessProbe:
+            failureThreshold: 3
+            initialDelaySeconds: 10
+            periodSeconds: 30
+            successThreshold: 1
+            tcpSocket:
+              port: 3000
+            timeoutSeconds: 1
+          startupProbe:
+            failureThreshold: 3
+            initialDelaySeconds: 10
+            periodSeconds: 30
+            successThreshold: 1
+            tcpSocket:
+              port: 3000
+            timeoutSeconds: 1
+          resources:
+          {{- toYaml .Values.grafana.resources | nindent 12 }}
+          volumeMounts:
+          - name: sources
+            mountPath: "/etc/grafana/provisioning/datasources/datasources.yaml"
+            subPath: "datasources.yaml"
+          - mountPath: "/var/lib/grafana"
+            name: {{ .Values.grafana.persistence.name }}
+          - name: dashboards
+            mountPath: "/etc/grafana/provisioning/dashboards"
+      volumes:
+      - name: sources
+        configMap:
+          name: {{ .Values.grafana.name }}
+          defaultMode: 420
+      - name: {{ .Values.grafana.persistence.name }}
+        persistentVolumeClaim:
+          claimName: {{ .Values.grafana.persistence.name }}
+          readOnly: false
+      - name: dashboards
+        configMap:
+          name: "{{ .Values.grafana.name }}-dashboards"
+          defaultMode: 420
+{{- end }}

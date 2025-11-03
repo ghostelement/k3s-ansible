@@ -1,0 +1,1 @@
+Kuboard has been deployed successfully.

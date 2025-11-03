@@ -1,0 +1,21 @@
+{{- if and (eq .Values.service.type "Ingress") (.Values.modules.hsz.enabled) }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ .Values.image.hsz.name }}
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: web
+spec:
+  ingressClassName: {{ .Values.service.ingressClassName }}
+  rules:
+  - host: {{ .Values.service.domain }}
+    http:
+      paths:
+      - path: /hsz
+        pathType: Prefix
+        backend:
+          service:
+            name: {{ .Values.image.hsz.name }}  ## 后端service服务名称
+            port:
+              number: {{ .Values.image.hsz.port }}
+{{- end }}

@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: Service
+metadata:
+  annotations: {}
+  labels:
+    app: {{ .Values.uiNginx.name }}
+  name: {{ .Values.uiNginx.name }}
+spec:
+  clusterIP:
+  ports:
+    - name: web
+      port: 49898
+      protocol: TCP
+      targetPort: 49898
+      nodePort: 49898
+  selector:
+    app: {{ .Values.uiNginx.name }}
+  type: NodePort

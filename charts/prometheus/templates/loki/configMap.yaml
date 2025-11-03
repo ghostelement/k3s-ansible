@@ -1,0 +1,113 @@
+{{- if .Values.loki.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  annotations: {}
+  labels: {}
+  name: {{ .Values.loki.name }}
+data:
+  local-config.yaml: |-
+    auth_enabled: false
+
+    server:
+      http_listen_port: 3100
+      grpc_listen_port: 3110
+      grpc_server_max_recv_msg_size: 1073741824  #grpc最大接收消息值，默认4m
+      grpc_server_max_send_msg_size: 1073741824  #grpc最大发送消息值，默认4m
+
+    ingester:
+      wal:
+        enabled: true
+        dir: /opt/loki/wal
+      lifecycler:
+        address: 127.0.0.1
+        ring:
+          kvstore:
+            store: inmemory
+          replication_factor: 1
+        final_sleep: 0s
+      chunk_idle_period: 5m
+      chunk_retain_period: 30s
+      #max_transfer_retries: 0   #新版已移除此配置
+      max_chunk_age: 20m  #一个timeseries块在内存中的最大持续时间。如果timeseries运行的时间超过此时间，则当前块将刷新到存储并创建一个新块
+
+    schema_config:
+      configs:
+        - from: 2024-02-28
+          store: boltdb
+          object_store: filesystem
+          schema: v11
+          index:
+            prefix: index_
+            period: 168h
+
+    storage_config:
+      boltdb:
+        directory: /opt/loki/index #存储索引地址
+      filesystem:
+        directory: /opt/loki/chunks
+
+    limits_config:
+      enforce_metric_name: false
+      reject_old_samples: true
+      reject_old_samples_max_age: 168h
+      ingestion_rate_mb: 100  #修改每用户摄入速率限制，即每秒样本量，默认值为4M
+      ingestion_burst_size_mb: 100  #修改每用户摄入速率限制，即每秒样本量，默认值为6M
+      #retention_period: 4368h  #日志保留周期182天,配合compactor模块
+      max_entries_limit_per_query: 500000  #修改每用户查询日志行数限制，默认值为5000
+    chunk_store_config:
+            #max_look_back_period: 168h   #回看日志行的最大时间，只适用于即时日志
+      max_look_back_period: 4368h
+
+    table_manager:
+      retention_deletes_enabled: true #日志保留周期开关，默认为false
+      retention_period: 4368h  #日志保留周期182天
+    ##更细化的日志管理器,一般使用table_manager即可
+    #compactor:
+      #working_directory: /opt/loki/persistent
+      #shared_store: filesystem
+      #retention_enabled: true
+      # 指定 Compactor 定期检查更新过期表的间隔时间
+      #compaction_interval: 5m
+      # 删除过期日志之前所暂停的时间间隔，简而言之，过期后多久删除
+      #retention_delete_delay: 1m
+      # 删除表任务开启的 worker 服务的数量
+      #retention_delete_worker_count: 150
+
+    ruler:
+      # 触发告警事件后的回调查询地址
+      # 如果用grafana的话就配置成grafana/explore
+      external_url: http://{{ .Values.grafana.name }}:3000
+    
+      # alertmanager地址
+      alertmanager_url: http://{{ .Values.alertmanager.name }}:9093
+      enable_alertmanager_v2: true
+      ring:
+        kvstore:
+          store: inmemory
+    
+      # 启用loki rules API
+      enable_api: true
+    
+      # 对rules分片，支持ruler多实例
+      enable_sharding: true
+    
+      # ruler服务的一致性哈希环配置，用于支持多实例和分片
+    #ring:
+      #      kvstore:
+      #          consul:
+      #              host: <consul-endpoint>:8500
+      #          store: consul
+      # rules临时规则文件存储路径
+      rule_path: /mnt/config/rules-temp
+    
+      # rules规则存储
+      # 主要支持本地存储（local）和对象文件系统（azure, gcs, s3, swift）
+      storage:
+        type: local
+        local:
+          directory: /opt/loki/rules
+    
+      # rules规则加载时间
+      flush_period: 1m
+{{- end }}

@@ -1,0 +1,21 @@
+{{- if and (.Values.health) (eq .Values.image.ygtHealthH5.service.type "Ingress") }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ .Values.image.ygtHealthH5.name }}
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: web
+spec:
+  ingressClassName: {{ .Values.service.ingressClassName }}
+  rules:
+  - host: {{ .Values.service.domain }}
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: {{ .Values.image.ygtHealthH5.name }}  ## 后端service服务名称
+            port:
+              number: {{ .Values.image.ygtHealthH5.port }}
+{{- end }}

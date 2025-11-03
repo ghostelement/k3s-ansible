@@ -1,0 +1,38 @@
+{{- if .Values.promtail.enabled }}
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ .Values.promtail.serviceAccountName }}
+  namespace: {{ include "prometheus.namespace" . }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ .Values.promtail.serviceAccountName }}
+  namespace: {{ include "prometheus.namespace" . }}
+rules:
+  - apiGroups: [""]
+    resources:
+    - nodes
+    - services
+    - pods
+    verbs:
+    - get
+    - watch
+    - list
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ .Values.promtail.serviceAccountName }}
+  namespace: {{ include "prometheus.namespace" . }}
+subjects:
+    - kind: ServiceAccount
+      name: {{ .Values.promtail.serviceAccountName }}
+      namespace: {{ include "prometheus.namespace" . }}
+roleRef:
+  kind: ClusterRole
+  name: {{ .Values.promtail.serviceAccountName }}
+  apiGroup: rbac.authorization.k8s.io
+{{- end }}

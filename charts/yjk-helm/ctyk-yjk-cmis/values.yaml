@@ -1,0 +1,58 @@
+# 副本数
+replicaCount: 1
+
+global:
+  ## @param global.imageRegistry Global Docker image registry
+  imageRegistry: ""
+  ## Optionally specify an array of imagePullSecrets.
+  ## Example:
+  ## imagePullSecrets:
+  ##   - myRegistryKeySecretName
+  imagePullSecrets: []
+
+image:
+  appCmis:
+    name: ctyk-yjk-cmis-app-cmis
+    repository: 'k3s.harbor:8090/sync/yjk-release-docker/smart-hospital/server/ctyk-yjk-cmis-app-cmis'
+    tag: "v1.7.1-release-tag"   ## TODO: 修改为实际版本号
+    port: 20551
+  middleCmis:
+    name: ctyk-yjk-middle-business-cmis
+    repository: 'k3s.harbor:8090/sync/yjk-release-docker/smart-hospital/server/ctyk-yjk-middle-business-cmis'
+    tag: "v1.7.1-release-tag"   ## TODO: 修改为实际版本号
+    port: 20550
+
+env:
+  - name: "TZ"
+    value: "Asia/Shanghai"
+  - name: PROFILE
+    value: "prod"
+  - name: JAVA_OPTS
+    value: "-server -Xms1G -Xmx1G -Xmn512M"
+
+isGray: "false"  # TODO: 是否为灰度版本,灰度版本会在变量中添加Dyk_gray=true
+skywalking:
+  enabled: false   #TODO: 开启skywalking，前提是已经部署过skywalking oap服务,否则设为false
+nameOverride: ""
+fullnameOverride: ""
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 1Gi
+  limits:
+    cpu: 4
+    memory: 2Gi
+
+updateStrategy:
+  type: RollingUpdate
+
+podAnnotations: {}
+
+podSecurityContext: {}
+
+securityContext: {}
+
+nodeSelector: {}
+
+tolerations: []

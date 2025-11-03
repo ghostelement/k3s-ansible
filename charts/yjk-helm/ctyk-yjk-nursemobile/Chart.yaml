@@ -1,0 +1,5 @@
+apiVersion: v2
+description: 智慧医院后端  移动护理
+name: ctyk-yjk-Nursemobile
+type: application
+version: 1.7.0

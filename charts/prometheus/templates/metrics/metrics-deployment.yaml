@@ -1,0 +1,64 @@
+{{- if .Values.metrics.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: {{ .Values.metrics.name }}
+    app.kubernetes.io/component: exporter
+    app.kubernetes.io/name: {{ .Values.metrics.name }}
+    app.kubernetes.io/version: {{ .Values.metrics.image.tag }}
+  name: {{ .Values.metrics.name }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ .Values.metrics.name }}
+      app.kubernetes.io/name: {{ .Values.metrics.name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.metrics.name }}
+        app.kubernetes.io/component: exporter
+        app.kubernetes.io/name: {{ .Values.metrics.name }}
+        app.kubernetes.io/version: {{ .Values.metrics.image.tag }}
+    spec:
+      tolerations:                # 设置能容忍在master节点运行
+      - key: "node-role.kubernetes.io/master"
+        operator: "Exists"
+        effect: "NoSchedule"
+      automountServiceAccountToken: true
+      containers:
+      - image: "{{ .Values.metrics.image.repository }}:{{ .Values.metrics.image.tag }}"
+        imagePullPolicy: {{ .Values.metrics.image.pullPolicy }}
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 8080
+          initialDelaySeconds: 5
+          timeoutSeconds: 5
+          periodSeconds: 30
+        name: {{ .Values.metrics.name }}
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 8081
+          initialDelaySeconds: 5
+          timeoutSeconds: 5
+          periodSeconds: 30
+        resources:
+        {{- toYaml .Values.metrics.resources | nindent 10 }}
+        ports:
+        {{- range $key, $value := .Values.metrics.ports }}
+          - containerPort: {{ $value }}
+            name: {{ $key }}
+            protocol: TCP
+        {{- end }}
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+          readOnlyRootFilesystem: true
+          runAsUser: 65534
+      serviceAccountName: {{ .Values.metrics.serviceAccountName }}
+{{- end }}

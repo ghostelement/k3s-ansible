@@ -1,0 +1,19 @@
+{{- if .Values.metrics.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  annotations: {}
+  labels:
+    app: {{ .Values.metrics.name }}
+  name: {{ .Values.metrics.name }}
+spec:
+  clusterIP:
+  ports:
+    - name: web
+      port: 5557
+      protocol: TCP
+      targetPort: 5557
+  selector:
+    app: {{ .Values.metrics.name }}
+  type: ClusterIP
+{{- end }}

@@ -1,0 +1,113 @@
+# 副本数
+replicaCount: 1
+
+global:
+  ## @param global.imageRegistry Global Docker image registry
+  imageRegistry: ""
+  ## Optionally specify an array of imagePullSecrets.
+  ## Example:
+  ## imagePullSecrets:
+  ##   - myRegistryKeySecretName
+  imagePullSecrets: []
+
+image:
+  appCostmagage:
+    name: ctyk-his-app-costmanage
+    repository: 'k3s.harbor:8090/sync/yjk-release-docker/smart-hospital/server/ctyk-yjk-his-app-costmanage'
+    tag: "v1.7.0-release-tag"   ## TODO: 修改为实际版本号
+    port: 20150
+  appMedicalinsurance:
+    name: ctyk-his-app-medicalinsurance
+    repository: 'k3s.harbor:8090/sync/yjk-release-docker/smart-hospital/server/ctyk-yjk-his-app-medicalinsurance'
+    tag: "v1.7.0-release-tag"   ## TODO: 修改为实际版本号
+    port: 20151
+  appMzcharge:
+    name: ctyk-his-app-mzcharge
+    repository: 'k3s.harbor:8090/sync/yjk-release-docker/smart-hospital/server/ctyk-yjk-his-app-mzcharge'
+    tag: "v1.7.0-release-tag"   ## TODO: 修改为实际版本号
+    port: 20152
+  appZyhos:
+    name: ctyk-his-app-zyhos
+    repository: 'k3s.harbor:8090/sync/yjk-release-docker/smart-hospital/server/ctyk-yjk-his-app-zyhos'
+    tag: "v1.7.0-release-tag"   ## TODO: 修改为实际版本号
+    port: 20153
+  aggregateSettlepay:
+    name: ctyk-middle-aggregate-settlepay
+    repository: 'k3s.harbor:8090/sync/yjk-release-docker/smart-hospital/server/ctyk-yjk-middle-aggregate-settlepay'
+    tag: "v1.7.1-release-tag"   ## TODO: 修改为实际版本号
+    port: 20154
+  basePayment:
+    name: ctyk-middle-base-payment
+    repository: 'k3s.harbor:8090/sync/yjk-release-docker/smart-hospital/server/ctyk-yjk-middle-base-payment'
+    tag: "v1.7.0-release-tag"   ## TODO: 修改为实际版本号
+    port: 20160
+  baseSettlement:
+    name: ctyk-middle-base-settlement
+    repository: 'k3s.harbor:8090/sync/yjk-release-docker/smart-hospital/server/ctyk-yjk-middle-base-settlement'
+    tag: "v1.7.3-release-tag"   ## TODO: 修改为实际版本号
+    port: 20161
+  baseTrade:
+    name: ctyk-middle-base-trade
+    repository: 'k3s.harbor:8090/sync/yjk-release-docker/smart-hospital/server/ctyk-yjk-middle-base-trade'
+    tag: "v1.7.3-release-tag"   ## TODO: 修改为实际版本号
+    port: 20162
+  businessInvoice:
+    name: ctyk-middle-business-invoice
+    repository: 'k3s.harbor:8090/sync/yjk-release-docker/smart-hospital/server/ctyk-yjk-middle-business-invoice'
+    tag: "v1.7.2-release-tag"   ## TODO: 修改为实际版本号
+    port: 20170
+  businessMedicalinsurance:
+    name: ctyk-middle-business-medicalinsurance
+    repository: 'k3s.harbor:8090/sync/yjk-release-docker/smart-hospital/server/ctyk-yjk-middle-business-medicalinsurance'
+    tag: "v1.7.5-release-tag"   ## TODO: 修改为实际版本号
+    port: 20171
+  businessMzsettle:
+    name: ctyk-middle-business-mzsettle
+    repository: 'k3s.harbor:8090/sync/yjk-release-docker/smart-hospital/server/ctyk-yjk-middle-business-mzsettle'
+    tag: "v1.7.3-release-tag"   ## TODO: 修改为实际版本号
+    port: 20172
+  businessSettlement:
+    name: ctyk-middle-business-settlement
+    repository: 'k3s.harbor:8090/sync/yjk-release-docker/smart-hospital/server/ctyk-yjk-middle-business-settlement'
+    tag: "v1.7.3-release-tag"   ## TODO: 修改为实际版本号
+    port: 20173
+  businessZy:
+    name: ctyk-middle-business-zy
+    repository: 'k3s.harbor:8090/sync/yjk-release-docker/smart-hospital/server/ctyk-yjk-middle-business-zy'
+    tag: "v1.7.0-release-tag"   ## TODO: 修改为实际版本号
+    port: 20174
+
+env:
+  - name: "TZ"
+    value: "Asia/Shanghai"
+  - name: PROFILE
+    value: "prod"
+  - name: JAVA_OPTS
+    value: "-server -Xms1G -Xmx1G -Xmn512M"
+
+isGray: "false"  # TODO: 是否为灰度版本,灰度版本会在变量中添加Dyk_gray=true
+skywalking:
+  enabled: false   #TODO: 开启skywalking，前提是已经部署过skywalking oap服务,否则设为false
+nameOverride: ""
+fullnameOverride: ""
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 1Gi
+  limits:
+    cpu: 4
+    memory: 2Gi
+
+updateStrategy:
+  type: RollingUpdate
+
+podAnnotations: {}
+
+podSecurityContext: {}
+
+securityContext: {}
+
+nodeSelector: {}
+
+tolerations: []

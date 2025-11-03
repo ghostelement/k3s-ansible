@@ -1,0 +1,7 @@
+nacos:  #TODO: Nacos配置
+  username: "nacos"
+  password: "ctyk@yHJ!Uc45aBn"
+  namespace: "ctyk-yjk"
+  host: "nacos.default.svc.cluster.local"
+  port: "8848"
+  group: "DEFAULT_GROUP"

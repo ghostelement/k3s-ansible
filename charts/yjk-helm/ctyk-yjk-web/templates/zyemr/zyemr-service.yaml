@@ -1,0 +1,17 @@
+{{- if .Values.modules.zyemr.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.image.zyemr.name }}
+  labels:
+    {{- include "ctyk-yjk.labels" . | nindent 4 }}
+spec:
+  type: ClusterIP
+  ports:
+    - port: {{ .Values.image.zyemr.port }}
+      targetPort: {{ .Values.image.zyemr.port }}
+      protocol: TCP
+      name: http
+  selector:
+    app: {{ .Values.image.zyemr.name }}
+{{- end }}

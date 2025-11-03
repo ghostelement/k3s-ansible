@@ -1,0 +1,19 @@
+{{- if .Values.alertmanager.enabled }}
+kind: Service
+apiVersion: v1
+metadata:
+  labels:
+    app: {{ .Values.alertmanager.name }}
+  name: {{ .Values.alertmanager.name }}
+spec:
+  type: {{ .Values.alertmanager.service.type }}
+  ports:
+  {{- range $key, $value := .Values.alertmanager.ports }}
+    - name: {{ $key }}
+      port: {{ $value }}
+      targetPort: {{ $value }}
+      protocol: TCP
+  {{- end }}
+  selector:
+    app: {{ .Values.alertmanager.name }}
+{{- end}}

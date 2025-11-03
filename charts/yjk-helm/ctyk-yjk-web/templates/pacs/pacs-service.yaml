@@ -1,0 +1,17 @@
+{{- if .Values.modules.pacs.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.image.pacs.name }}
+  labels:
+    {{- include "ctyk-yjk.labels" . | nindent 4 }}
+spec:
+  type: ClusterIP
+  ports:
+    - port: {{ .Values.image.pacs.port }}
+      targetPort: {{ .Values.image.pacs.port }}
+      protocol: TCP
+      name: http
+  selector:
+    app: {{ .Values.image.pacs.name }}
+{{- end }}

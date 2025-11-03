@@ -1,0 +1,304 @@
+# 副本数
+replicaCount: 1
+
+global:
+  ## @param global.imageRegistry Global Docker image registry
+  imageRegistry: ""
+  ## Optionally specify an array of imagePullSecrets.
+  ## Example:
+  ## imagePullSecrets:
+  ##   - myRegistryKeySecretName
+  imagePullSecrets: []
+
+image:
+  # 基础模块
+  main:
+    name: ctyk-yjk-web-site
+    repository: 'k3s.harbor:8090/sync/yjk-release-docker/smart-hospital/web/ctyk-yjk-web-site'
+    tag: "v1.7.9-release-tag"   ## TODO: 修改为实际版本号
+    port: 30000
+  system:
+    name: ctyk-yjk-web-system
+    repository: 'k3s.harbor:8090/sync/yjk-release-docker/smart-hospital/web/ctyk-yjk-web-system'
+    tag: "v1.7.14-release-tag"   ## TODO: 修改为实际版本号
+    port: 80
+  ctreport:
+    name: ctyk-yjk-web-ctreport
+    repository: 'k3s.harbor:8090/sync/yjk-release-docker/smart-hospital/web/ctyk-yjk-web-ctreport'
+    tag: "v1.7.7-release-tag"   ## TODO: 修改为实际版本号
+    port: 80
+  # 编辑器
+  dcwriter:
+    name: ctyk-yjk-zyemr-web-dcwriter
+    repository: 'k3s.harbor:8090/sync/yjk-release-docker/smart-hospital/web/ctyk-yjk-zyemr-web-dcwriter'
+    tag: "v1.7.0-release-tag"   ## TODO: 修改为实际版本号
+    port: 80
+  # 病案首页
+  cmis:
+    name: ctyk-yjk-cmis-web-cmis
+    repository: 'k3s.harbor:8090/sync/yjk-release-docker/smart-hospital/web/ctyk-yjk-cmis-web-cmis'
+    tag: "v1.7.0-release-tag"   ## TODO: 修改为实际版本号
+    port: 80
+  # 结算
+  costmanage:
+    name: ctyk-yjk-his-web-costmanage
+    repository: 'k3s.harbor:8090/sync/yjk-release-docker/smart-hospital/web/ctyk-yjk-his-web-costmanage'
+    tag: "v1.7.0-release-tag"   ## TODO: 修改为实际版本号
+    port: 80
+  medicalinsurance:
+    name: ctyk-yjk-his-web-medicalinsurance
+    repository: 'k3s.harbor:8090/sync/yjk-release-docker/smart-hospital/web/ctyk-yjk-his-web-medicalinsurance'
+    tag: "v1.7.0-release-tag"   ## TODO: 修改为实际版本号
+    port: 80
+  mzcharge:
+    name: ctyk-yjk-his-web-mzcharge
+    repository: 'k3s.harbor:8090/sync/yjk-release-docker/smart-hospital/web/ctyk-yjk-his-web-mzcharge'
+    tag: "v1.7.0-release-tag"   ## TODO: 修改为实际版本号
+    port: 80
+  zyhos:
+    name: ctyk-yjk-his-web-zyhos
+    repository: 'k3s.harbor:8090/sync/yjk-release-docker/smart-hospital/web/ctyk-yjk-his-web-zyhos'
+    tag: "v1.7.0-release-tag"   ## TODO: 修改为实际版本号
+    port: 80
+  # 门诊
+  mzemr:
+    name: ctyk-yjk-mzemr-front-mzemr
+    repository: 'k3s.harbor:8090/sync/yjk-release-docker/smart-hospital/web/ctyk-yjk-mzemr-front-mzemr'
+    tag: "v1.7.1-16-tag"   ## TODO: 修改为实际版本号
+    port: 80
+  clinic:
+    name: ctyk-yjk-mzemr-web-clinic
+    repository: 'k3s.harbor:8090/sync/yjk-release-docker/smart-hospital/web/ctyk-yjk-mzemr-web-clinic'
+    tag: "v1.7.19-release-tag"
+    port: 80
+  # 门诊输液
+  mzinfusion:
+    name: ctyk-yjk-web-mzinfusion
+    repository: 'k3s.harbor:8090/sync/yjk-release-docker/smart-hospital/web/ctyk-yjk-mzinfusion-web-mzinfusion'
+    tag: "v1.7.2-release-tag"
+    port: 80
+  # LIS
+  lis:
+    name: ctyk-yjk-lis-web-lis
+    repository: 'k3s.harbor:8090/sync/yjk-release-docker/smart-hospital/web/ctyk-yjk-lis-web-lis'
+    tag: "v1.7.5-release-tag"   ## TODO: 修改为实际版本号
+    port: 80
+  # PACS
+  pacs:
+    name: ctyk-yjk-pacs-web-pacs
+    repository: 'k3s.harbor:8090/sync/yjk-release-docker/smart-hospital/web/ctyk-yjk-pacs-web-pacs'
+    tag: "v1.7.3-release-tag"   ## TODO: 修改为实际版本号
+    port: 80
+  pacsViewer:
+    name: ctyk-yjk-pacs-web-viewer
+    repository: 'k3s.harbor:8090/sync/yjk-release-docker/smart-hospital/web/ctyk-yjk-pacs-web-viewer'
+    tag: "v1.7.1-release-tag"
+    port: 80
+  # 药房药库
+  drugstorage:
+    name: ctyk-yjk-his-web-drugstorage
+    repository: 'k3s.harbor:8090/sync/yjk-release-docker/smart-hospital/web/ctyk-yjk-his-web-drugstorage'
+    tag: "v1.7.22-release-tag"   ## TODO: 修改为实际版本号
+    port: 80
+  material:
+    name: ctyk-yjk-his-web-material
+    repository: 'k3s.harbor:8090/sync/yjk-release-docker/smart-hospital/web/ctyk-yjk-his-web-material'
+    tag: "v1.7.22-release-tag"   ## TODO: 修改为实际版本号
+    port: 80
+  pharmacy:
+    name: ctyk-yjk-his-web-pharmacy
+    repository: 'k3s.harbor:8090/sync/yjk-release-docker/smart-hospital/web/ctyk-yjk-his-web-pharmacy'
+    tag: "v1.7.22-release-tag"   ## TODO: 修改为实际版本号
+    port: 80
+  # 分诊叫号
+  tigcoac:
+    name: ctyk-yjk-web-tigc
+    repository: 'k3s.harbor:8090/sync/yjk-release-docker/smart-hospital/web/ctyk-yjk-web-tigc'
+    tag: "v1.7.0-release-tag"   ## TODO: 修改为实际版本号
+    port: 80
+  # 预约管理中心
+  amc:
+    name: ctyk-yjk-amc-web-amc
+    repository: 'k3s.harbor:8090/sync/yjk-release-docker/smart-hospital/web/ctyk-yjk-amc-web-amc'
+    tag: "v1.7.0-release-tag"   ## TODO: 修改为实际版本号
+    port: 80
+  # 院长查询 
+  dqs:
+    name: ctyk-yjk-web-dqs
+    repository: 'k3s.harbor:8090/sync/yjk-release-docker/smart-hospital/web/ctyk-yjk-dqs-web-dqs'
+    tag: "v1.7.0-release-tag"   ## TODO: 修改为实际版本号
+    port: 80
+  # 护士站
+  hsz:
+    name: ctyk-yjk-his-web-hsz
+    repository: 'k3s.harbor:8090/sync/yjk-release-docker/smart-hospital/web/ctyk-yjk-his-web-hsz'
+    tag: "v1.7.17-release-tag"   ## TODO: 修改为实际版本号
+    port: 80
+  nursedoc:
+    name: ctyk-yjk-his-web-nursedoc
+    repository: 'k3s.harbor:8090/sync/yjk-release-docker/smart-hospital/web/ctyk-yjk-his-web-nursedoc'
+    tag: "v1.7.5-release-tag"   ## TODO: 修改为实际版本号
+    port: 80
+  # 医生站临床路径
+  cpms:
+    name: ctyk-yjk-cpms-web-cpms
+    repository: 'k3s.harbor:8090/sync/yjk-release-docker/smart-hospital/web/ctyk-yjk-cpms-web-cpms'
+    tag: "v1.7.0-release-tag"   ## TODO: 修改为实际版本号
+    port: 80
+  zyemr:
+    name: ctyk-yjk-zyemr-web-zyemr
+    repository: 'k3s.harbor:8090/sync/yjk-release-docker/smart-hospital/web/ctyk-yjk-zyemr-web-zyemr'
+    tag: "v1.7.10-release-tag"   ## TODO: 修改为实际版本号
+    port: 80
+  # 便民服务
+  csess:
+    name: ctyk-yjk-csess-web-csess
+    repository: 'k3s.harbor:8090/sync/yjk-release-docker/smart-hospital/web/ctyk-yjk-csess-web-csess'
+    tag: "v1.7.0-release-tag"   ## TODO: 修改为实际版本号
+    port: 80
+  # 体检
+  pems:
+    name: ctyk-yjk-pems-web-pems
+    repository: 'k3s.harbor:8090/sync/yjk-release-docker/smart-hospital/web/ctyk-yjk-pems-web-pems'
+    tag: "v1.7.1-release-tag"   ## TODO: 修改为实际版本号
+    port: 80
+  # 移动护理
+  nursemobile:
+    name: ctyk-web-nursemobile
+    repository: 'k3s.harbor:8090/sync/yjk-release-docker/smart-hospital/web/ctyk-yjk-web-nursemobile'
+    tag: "v1.6.7-release-tag"
+    port: 80
+  # 移动护理管理后台
+  nursemobileBack:
+    name: ctyk-backstage-web-nursemobile
+    repository: 'k3s.harbor:8090/sync/yjk-release-docker/smart-hospital/web/ctyk-yjk-backstage-web-nursemobile'
+    tag: "v1.6.2-release-tag"
+    port: 80
+  
+  # 物资管理
+  hmms:
+    name: ctyk-yjk-his-web-hmms
+    repository: 'k3s.harbor:8090/sync/yjk-release-docker/smart-hospital/web/ctyk-yjk-his-web-hmms'
+    tag: "v1.6.1-release-tag"
+    port: 80
+
+  # 手术麻醉
+  oas:
+    name: ctyk-yjk-oas-web-oas
+    repository: 'k3s.harbor:8090/sync/yjk-release-docker/smart-hospital/web/ctyk-yjk-oas-web-oas'
+    tag: "v1.7.0-release-tag"
+    port: 80
+
+service:
+  type: Ingress   # TODO: 设置对外暴漏服务类型,Ingress NodePort
+  ingressClassName: traefik  # TODO: 设置Ingress类型,默认为traefik
+  domain: "release.yjk.local"  # TODO: 设置Ingress域名, 灰度版设置为gray.yjk.local
+  externalPort: 31000  # 如果是NodePort，则需要设置基座对外暴漏端口号
+
+env:
+  - name: "gateway_1"
+    value: "ctyk-gateway:10007"   #TODO: 设置网关地址,默认同命名空间不需改动
+  - name: "gateway_websocket"
+    value: "ctyk-websocket:20111"
+
+modules:  #TODO: 子模块，不需要的前端子模块可设为false
+  # 病案首页
+  cmis:
+    enabled: true
+  # 结算
+  costmanage:
+    enabled: true
+  medicalinsurance:
+    enabled: true
+  mzcharge:
+    enabled: true
+  zyhos:
+    enabled: true
+  # 报表
+  ctreport:
+    enabled: true
+  # 门诊
+  mzemr:
+    enabled: true
+  clinic:
+    enabled: true
+  # 门诊输液
+  mzinfusion:
+    enabled: true
+  # LIS
+  lis:
+    enabled: false
+  # PACS
+  pacs:
+    enabled: false
+  pacsViewer:
+    enabled: false
+  # 药房药库
+  drugstorage:
+    enabled: true
+  material:
+    enabled: true
+  pharmacy:
+    enabled: true
+  # 分诊叫号
+  tigcoac:
+    enabled: false
+  # 预约管理中心
+  amc:
+    enabled: false
+  # 院长查询  
+  dqs:
+    enabled: false
+  # 护士站
+  hsz:
+    enabled: true
+  nursedoc:
+    enabled: true
+  # 医生站临床路径
+  cpms:
+    enabled: true
+  zyemr:
+    enabled: true
+  # 便民服务
+  csess:
+    enabled: true
+  # 体检
+  pems:
+    enabled: true
+  # 移动护理
+  nursemobile:
+    enabled: true
+  # 移动护理后台管理
+  nursemobileBack:
+    enabled: true
+  # 物资管理
+  hmms:
+    enabled: true
+  # 手术麻醉
+  oas:
+    enabled: true
+
+
+nameOverride: ""
+fullnameOverride: ""
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 256Mi
+  limits:
+    cpu: 4
+    memory: 1Gi
+
+updateStrategy:
+  type: RollingUpdate
+
+podAnnotations: {}
+
+podSecurityContext: {}
+
+securityContext: {}
+
+nodeSelector: {}
+
+tolerations: []

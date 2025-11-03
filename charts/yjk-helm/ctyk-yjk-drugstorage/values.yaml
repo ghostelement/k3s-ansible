@@ -1,0 +1,92 @@
+# 副本数
+replicaCount: 1
+
+global:
+  ## @param global.imageRegistry Global Docker image registry
+  imageRegistry: ""
+  ## Optionally specify an array of imagePullSecrets.
+  ## Example:
+  ## imagePullSecrets:
+  ##   - myRegistryKeySecretName
+  imagePullSecrets: []
+
+image:
+  appDrugstorage:
+    name: ctyk-his-app-drugstorage
+    repository: 'k3s.harbor:8090/sync/yjk-release-docker/smart-hospital/server/ctyk-yjk-his-app-drugstorage'
+    tag: "v1.7.28-cross-release-tag"   ## TODO: 修改为实际版本号
+    port: 20200
+  appMaterial:
+    name: ctyk-his-app-material
+    repository: 'k3s.harbor:8090/sync/yjk-release-docker/smart-hospital/server/ctyk-yjk-his-app-material'
+    tag: "v1.7.0-release-tag"   ## TODO: 修改为实际版本号
+    port: 20202
+  appPharmacy:
+    name: ctyk-his-app-pharmacy
+    repository: 'k3s.harbor:8090/sync/yjk-release-docker/smart-hospital/server/ctyk-yjk-his-app-pharmacy'
+    tag: "v1.7.0-release-tag"   ## TODO: 修改为实际版本号
+    port: 20201
+  aggregateDrug:
+    name: ctyk-middle-aggregate-drug
+    repository: 'k3s.harbor:8090/sync/yjk-release-docker/smart-hospital/server/ctyk-yjk-middle-aggregate-drug'
+    tag: "v1.7.26-release-tag"   ## TODO: 修改为实际版本号
+    port: 20203
+  baseDict:
+    name: ctyk-middle-base-dict
+    repository: 'k3s.harbor:8090/sync/yjk-release-docker/smart-hospital/server/ctyk-yjk-middle-base-dict'
+    tag: "v1.7.26-release-tag"   ## TODO: 修改为实际版本号
+    port: 20207
+  baseResource:
+    name: ctyk-middle-base-resource
+    repository: 'k3s.harbor:8090/sync/yjk-release-docker/smart-hospital/server/ctyk-yjk-middle-base-resource'
+    tag: "v1.7.26-release-tag"   ## TODO: 修改为实际版本号
+    port: 20206
+  businessDrug:
+    name: ctyk-middle-business-drug
+    repository: 'k3s.harbor:8090/sync/yjk-release-docker/smart-hospital/server/ctyk-yjk-middle-business-drug'
+    tag: "v1.7.26-release-tag"   ## TODO: 修改为实际版本号
+    port: 20204
+  businessMaterial:
+    name: ctyk-middle-business-material
+    repository: 'k3s.harbor:8090/sync/yjk-release-docker/smart-hospital/server/ctyk-yjk-middle-business-material'
+    tag: "v1.7.26-release-tag"   ## TODO: 修改为实际版本号
+    port: 20205
+  jobDrug:
+    name: ctyk-his-job-drug
+    repository: 'k3s.harbor:8090/sync/yjk-release-docker/smart-hospital/server/ctyk-yjk-his-job-drug'
+    tag: "v1.7.0-release-tag"     ## TODO: 修改为实际版本号
+    port: 20208
+env:
+  - name: "TZ"
+    value: "Asia/Shanghai"
+  - name: PROFILE
+    value: "prod"
+  - name: JAVA_OPTS
+    value: "-server -Xms1G -Xmx1G -Xmn512M"
+
+isGray: "false"  # TODO: 是否为灰度版本,灰度版本会在变量中添加Dyk_gray=true
+skywalking:
+  enabled: false   #TODO: 开启skywalking，前提是已经部署过skywalking oap服务,否则设为false
+nameOverride: ""
+fullnameOverride: ""
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 1Gi
+  limits:
+    cpu: 4
+    memory: 2Gi
+
+updateStrategy:
+  type: RollingUpdate
+
+podAnnotations: {}
+
+podSecurityContext: {}
+
+securityContext: {}
+
+nodeSelector: {}
+
+tolerations: []

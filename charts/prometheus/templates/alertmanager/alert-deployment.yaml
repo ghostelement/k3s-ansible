@@ -1,0 +1,43 @@
+{{- if .Values.alertmanager.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    name: {{ .Values.alertmanager.name }}
+    app: {{ .Values.alertmanager.name }}
+  name: {{ .Values.alertmanager.name }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ .Values.alertmanager.name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.alertmanager.name }}
+    spec:
+      containers:
+      - image: "{{ .Values.alertmanager.image.repository }}:{{ .Values.alertmanager.image.tag }}"
+        name: {{ .Values.alertmanager.name }}
+        env:
+        {{- with .Values.prometheus.env }}
+        {{- toYaml . | nindent 12 }}
+        {{- end }}
+        ports:
+        {{- range $key, $value := .Values.alertmanager.ports }}
+          - name: {{ $key }}
+            containerPort: {{ $value }}
+            protocol: TCP
+        {{- end }}
+        volumeMounts:
+        - mountPath: "/etc/alertmanager/alertmanager.yml"
+          name: conf
+          subPath: alertmanager.yml
+        resources:
+        {{- toYaml .Values.alertmanager.resources | nindent 10 }}
+      volumes:
+      - name: conf
+        configMap:
+          name: {{ .Values.alertmanager.name }}
+          defaultMode: 420
+{{- end }}

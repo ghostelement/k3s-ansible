@@ -1,0 +1,59 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations: {}
+  labels:
+    app: {{ .Values.oap.name }}
+  name: {{ .Values.oap.name }}
+spec:
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: {{ .Values.oap.name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.oap.name }}
+    spec:
+      containers:
+        - name: {{ .Values.oap.name }}
+          image: "{{ .Values.oap.image.repository }}:{{ .Values.oap.image.tag }}"
+          imagePullPolicy: {{ .Values.oap.image.imagePullPolicy }}
+          ports:
+          {{- range $key, $value := .Values.oap.ports }}
+            - containerPort: {{ $value }}
+              name: {{ $key }}
+              protocol: TCP
+          {{- end }}
+          env:
+          {{- with .Values.oap.env }}
+          {{- toYaml . | nindent 12 }}
+          {{- end }}
+          resources:
+          {{- toYaml .Values.oap.resources | nindent 12 }}
+          livenessProbe:
+            failureThreshold: 3
+            initialDelaySeconds: 10
+            periodSeconds: 30
+            successThreshold: 1
+            tcpSocket:
+              port: 11800
+            timeoutSeconds: 1
+          readinessProbe:
+            failureThreshold: 3
+            initialDelaySeconds: 10
+            periodSeconds: 30
+            successThreshold: 1
+            tcpSocket:
+              port: 11800
+            timeoutSeconds: 1
+          startupProbe:
+            failureThreshold: 3
+            initialDelaySeconds: 10
+            periodSeconds: 30
+            successThreshold: 1
+            tcpSocket:
+              port: 11800
+            timeoutSeconds: 1
+          

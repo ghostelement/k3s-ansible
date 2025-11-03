@@ -1,0 +1,20 @@
+{{- if .Values.grafana.enabled }}
+kind: Service
+apiVersion: v1
+metadata:
+  labels:
+    app: {{ .Values.grafana.name }}
+  name: {{ .Values.grafana.name }}
+spec:
+  type: {{ .Values.grafana.service.type }}
+  ports:
+  {{- range $key, $value := .Values.grafana.ports }}
+    - name: {{ $key }}
+      port: {{ $value }}
+      targetPort: {{ $value }}
+      protocol: TCP
+      nodePort: {{ $value }}
+  {{- end }}
+  selector:
+    app: {{ .Values.grafana.name }}
+{{- end}}

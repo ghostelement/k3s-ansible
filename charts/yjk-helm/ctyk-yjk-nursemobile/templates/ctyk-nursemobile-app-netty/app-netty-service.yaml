@@ -1,0 +1,27 @@
+{{- if eq .Values.isGray "false" }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.image.appNetty.name }}
+  labels:
+    {{- include "ctyk-yjk.labels" . | nindent 4 }}
+  annotations:
+    prometheus.io/port: {{ .Values.image.appNetty.port | quote }}  #prometheus监控端口
+    prometheus.io/spring: "true"
+    prometheus.io/path: "actuator/prometheus"
+spec:
+  type: NodePort
+  ports:
+    - port: {{ .Values.image.appNetty.port }}
+      targetPort: {{ .Values.image.appNetty.port }}
+      nodePort: {{ .Values.image.appNetty.port }}
+      protocol: TCP
+      name: http
+    - port: {{ .Values.image.appNetty.externalPort }}
+      targetPort: {{ .Values.image.appNetty.externalPort }}
+      nodePort: {{ .Values.image.appNetty.externalPort }}
+      protocol: TCP
+      name: forward
+  selector:
+    app: {{ .Values.image.appNetty.name }}
+{{- end }}

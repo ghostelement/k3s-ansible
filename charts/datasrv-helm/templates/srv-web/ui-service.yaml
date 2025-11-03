@@ -1,0 +1,25 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.image.srvWeb.name }}
+  labels:
+    {{- include "ctyk-yjk.labels" . | nindent 4 }}
+spec:
+  {{- if eq .Values.image.srvWeb.service.type "NodePort" }}
+  type: NodePort
+  ports:
+    - port: {{ .Values.image.srvWeb.port }}
+      targetPort: {{ .Values.image.srvWeb.port }}
+      nodePort: {{ .Values.image.srvWeb.service.externalPort }}
+      protocol: TCP
+      name: http
+  {{- else }}
+  type: ClusterIP
+  ports:
+    - port: {{ .Values.image.srvWeb.port }}
+      targetPort: {{ .Values.image.srvWeb.port }}
+      protocol: TCP
+      name: http
+  {{- end }}
+  selector:
+    app: {{ .Values.image.srvWeb.name }}

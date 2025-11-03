@@ -1,0 +1,5 @@
+apiVersion: v2
+description: 智慧医院Nacos配置字典
+name: ctyk-nacos-config
+type: application
+version: 1.6.0

@@ -1,0 +1,25 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.image.iglSite.name }}
+  labels:
+    {{- include "ctyk-yjk.labels" . | nindent 4 }}
+spec:
+  {{- if eq .Values.image.iglSite.service.type "NodePort" }}
+  type: NodePort
+  ports:
+    - port: {{ .Values.image.iglSite.port }}
+      targetPort: {{ .Values.image.iglSite.port }}
+      nodePort: {{ .Values.image.iglSite.service.externalPort }}
+      protocol: TCP
+      name: http
+  {{- else }}
+  type: ClusterIP
+  ports:
+    - port: {{ .Values.image.iglSite.port }}
+      targetPort: {{ .Values.image.iglSite.port }}
+      protocol: TCP
+      name: http
+  {{- end }}
+  selector:
+    app: {{ .Values.image.iglSite.name }}

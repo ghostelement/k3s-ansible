@@ -1,0 +1,138 @@
+# 副本数
+replicaCount: 1
+
+global:
+  ## @param global.imageRegistry Global Docker image registry
+  imageRegistry: ""
+  ## Optionally specify an array of imagePullSecrets.
+  ## Example:
+  ## imagePullSecrets:
+  ##   - myRegistryKeySecretName
+  imagePullSecrets: []
+
+image:
+  ygtGateway:
+    name: gateway
+    repository: 'k3s.harbor:8090/sync/yjk-release-docker/medical-community-unified-portal/gateway'
+    tag: "v1.2.3-tag"  ## TODO: 修改为实际版本号
+    port: 38443
+  ygtAuth:
+    name: auth-server
+    repository: 'k3s.harbor:8090/sync/yjk-release-docker/medical-community-unified-portal/auth-server'
+    tag: "v1.2.3-tag"   ## TODO: 修改为实际版本号
+    port: 6016
+  ygtSystem:
+    name: system-service-model
+    repository: 'k3s.harbor:8090/sync/yjk-release-docker/medical-community-unified-portal/system-service-model'
+    tag: "v1.2.3-tag"   ## TODO: 修改为实际版本号
+    port: 8018
+  ygtCdr:
+    name: cdr-service-model
+    repository: 'k3s.harbor:8090/sync/yjk-release-docker/medical-community-cdr/cdr-service-model'
+    tag: "1.1.0-deploy"   ## TODO: 修改为实际版本号
+    port: 8024
+  ygtEmpi:
+    name: empi-service-model
+    repository: 'k3s.harbor:8090/sync/yjk-release-docker/medical-community-empi/empi-service-model'
+    tag: "v1.0.8-tag"   ## TODO: 修改为实际版本号
+    port: 8023
+  ygtMdm:
+    name: mdm-service-model
+    repository: 'k3s.harbor:8090/sync/yjk-release-docker/medical-community-mdm/mdm-service-model'
+    tag: "V1.0.7"   ## TODO: 修改为实际版本号
+    port: 8022
+  ygtHealth:
+    name: health-service-module
+    repository: 'k3s.harbor:8090/sync/yjk-release-docker/medical-community-health/health-service-module'
+    tag: "4.2.6-deploy"   ## TODO: 修改为实际版本号
+    port: 8099
+  
+
+  ygtWeb:
+    name: ygt-web
+    repository: 'k3s.harbor:8090/sync/yjk-release-docker/medical-community-unified-portal/ygt-web'
+    tag: "1.2.87-deploy"  ## TODO: 修改为实际版本号
+    port: 30082
+    service:
+      type: NodePort   # TODO: 设置对外暴漏服务类型,Ingress NodePort
+      ingressClassName: traefik  # TODO: 设置Ingress类型,默认为traefik
+      domain: "release.ygt.local"  # TODO: 设置Ingress域名, 灰度版设置为gray.yjk.local
+      externalPort: 30082  # 如果是NodePort，则需要设置基座对外暴漏端口号
+  ygtHealthManage:
+    name: health-manage-web
+    repository: 'k3s.harbor:8090/sync/yjk-release-docker/medical-community-health-manage/health-manage-web'
+    tag: "2.1.1-manage-deploy"  ## TODO: 修改为实际版本号
+    port: 38009
+    service:
+      type: NodePort   # TODO: 设置对外暴漏服务类型,Ingress NodePort
+      ingressClassName: traefik  # TODO: 设置Ingress类型,默认为traefik
+      domain: "release.ygthealth.local"  # TODO: 设置Ingress域名, 灰度版设置为gray.yjk.local
+      externalPort: 38009  # 如果是NodePort，则需要设置基座对外暴漏端口号
+  ygtHealthResident:
+    name: health-resident-web
+    repository: 'k3s.harbor:8090/sync/yjk-release-docker/medical-community-health-resident/health-resident-web'
+    tag: "2.1.11-resident-deploy"  ## TODO: 修改为实际版本号
+    port: 38008
+    service:
+      type: NodePort   # TODO: 设置对外暴漏服务类型,Ingress NodePort
+      ingressClassName: traefik  # TODO: 设置Ingress类型,默认为traefik
+      domain: "release.ygthealthresident.local"  # TODO: 设置Ingress域名, 灰度版设置为gray.yjk.local
+      externalPort: 38008  # 如果是NodePort，则需要设置基座对外暴漏端口号
+  ygtHealthH5:
+    name: health-h5-web
+    repository: 'k3s.harbor:8090/sync/yjk-release-docker/medical-community-health-h5/health-h5-web'
+    tag: "1.0.0"  ## TODO: 修改为实际版本号
+    port: 38007
+    service:
+      type: NodePort   # TODO: 设置对外暴漏服务类型,Ingress NodePort
+      ingressClassName: traefik  # TODO: 设置Ingress类型,默认为traefik
+      domain: "release.ygthealthh5.local"  # TODO: 设置Ingress域名, 灰度版设置为gray.yjk.local
+      externalPort: 38007  # 如果是NodePort，则需要设置基座对外暴漏端口号
+
+nacos:  #TODO: Nacos配置
+  username: "nacos"
+  password: "ctyk@yHJ!Uc45aBn"
+  namespace: "ygt"
+  host: "nacos.default.svc.cluster.local"
+  port: "8848"
+  group: "DEFAULT_GROUP"
+
+#TODO: 部署业务模块开关
+cdr: true
+mdm: true
+empi: true
+health: true
+
+env:
+  - name: "TZ"
+    value: "Asia/Shanghai"
+  - name: PROFILE
+    value: "test"
+  - name: JAVA_OPTS
+    value: "-server -Xms2G -Xmx2G -Xmn512M"
+
+skywalking:
+  enabled: false   #TODO: 开启skywalking，前提是已经部署过skywalking oap服务,否则设为false
+nameOverride: ""
+fullnameOverride: ""
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 2Gi
+  limits:
+    cpu: 4
+    memory: 3Gi
+
+updateStrategy:
+  type: RollingUpdate
+
+podAnnotations: {}
+
+podSecurityContext: {}
+
+securityContext: {}
+
+nodeSelector: {}
+
+tolerations: []

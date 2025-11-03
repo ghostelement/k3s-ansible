@@ -1,0 +1,5 @@
+apiVersion: v2
+description: 医共体平台
+name: ygt
+type: application
+version: 2.0.0

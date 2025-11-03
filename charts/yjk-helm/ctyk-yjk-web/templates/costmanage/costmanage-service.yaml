@@ -1,0 +1,17 @@
+{{- if .Values.modules.costmanage.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.image.costmanage.name }}
+  labels:
+    {{- include "ctyk-yjk.labels" . | nindent 4 }}
+spec:
+  type: ClusterIP
+  ports:
+    - port: {{ .Values.image.costmanage.port }}
+      targetPort: {{ .Values.image.costmanage.port }}
+      protocol: TCP
+      name: http
+  selector:
+    app: {{ .Values.image.costmanage.name }}
+{{- end }}

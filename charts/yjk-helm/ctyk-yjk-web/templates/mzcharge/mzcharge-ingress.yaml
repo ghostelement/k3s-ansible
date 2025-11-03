@@ -1,0 +1,21 @@
+{{- if and (eq .Values.service.type "Ingress") (.Values.modules.mzcharge.enabled) }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ .Values.image.mzcharge.name }}
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: web
+spec:
+  ingressClassName: {{ .Values.service.ingressClassName }}
+  rules:
+  - host: {{ .Values.service.domain }}
+    http:
+      paths:
+      - path: /mzcharge
+        pathType: Prefix
+        backend:
+          service:
+            name: {{ .Values.image.mzcharge.name }}  ## 后端service服务名称
+            port:
+              number: {{ .Values.image.mzcharge.port }}
+{{- end }}

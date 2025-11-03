@@ -1,0 +1,5 @@
+apiVersion: v2
+description: 双向转诊+远程会诊
+name: igl-sxzz
+type: application
+version: 2.0.0

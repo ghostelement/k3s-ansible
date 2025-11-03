@@ -1,0 +1,123 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.image.iglSite.name }}
+  labels:
+    app: {{ .Values.image.iglSite.name }}
+    {{- include "ctyk-yjk.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ .Values.image.iglSite.name }}
+      {{- include "ctyk-yjk.selectorLabels" . | nindent 6 }}
+  strategy: {{- toYaml .Values.updateStrategy | nindent 4 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        app: {{ .Values.image.iglSite.name }}
+        {{- include "ctyk-yjk.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- include "ctyk-yjk.imagePullSecrets" . | nindent 6 }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Values.image.iglSite.name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.iglSite.repository }}:{{ .Values.image.iglSite.tag }}"
+          imagePullPolicy: IfNotPresent
+          {{- with .Values.env }}
+          env:
+            {{- toYaml . | nindent 12 }}
+          {{- end}}
+            - name: "gateway"
+              value: "{{ .Values.image.iglGateway.name }}:{{ .Values.image.iglGateway.port }}"
+            - name: "gateway_app"
+              value: "{{ .Values.image.iglSiteApp.name }}:{{ .Values.image.iglSiteApp.port }}"
+            - name: gateway_sxzz # 双向转诊
+              value: "{{ .Values.image.iglSiteSxzz.name }}:{{ .Values.image.iglSiteSxzz.port }}"      
+            - name: gateway_ychz # 远程会诊
+              value: "{{ .Values.image.iglSiteYchz.name }}:{{ .Values.image.iglSiteYchz.port }}" 
+            - name: gateway_emr # 电子病历
+              value: "127.0.0.1:80"
+            - name: gateway_blood_bank # 血库
+              value: "127.0.0.1:80"  
+            - name: gateway_publicity_edu # 宣教
+              value: "127.0.0.1:80" 
+            - name: gateway_wx_public_account # 微信公众号
+              value: "127.0.0.1:80"  
+            - name: gateway_convenient_serve #便民服务  
+              value: "127.0.0.1:80"
+            - name: gateway_static  # 静态资源
+              value: "127.0.0.1:80"
+            - name: gateway_grafana #监控grafana"
+              value: "127.0.0.1:80"
+            - name: grafana_auth_token #监控grafana token"  Bearer glsa_wX9BVN8AQ
+              value: "Bearer glsa_wX9BVN8AQ"
+          ports:
+            - name: http
+              containerPort: {{ .Values.image.iglSite.port }}
+              protocol: TCP
+          livenessProbe:
+            failureThreshold: 3
+            successThreshold: 1
+            tcpSocket:
+              port: {{ .Values.image.iglSite.port }}
+            initialDelaySeconds: 5
+            timeoutSeconds: 1 
+            periodSeconds: 10
+          readinessProbe:
+            failureThreshold: 3
+            successThreshold: 1
+            initialDelaySeconds: 5
+            timeoutSeconds: 1
+            periodSeconds: 10
+            tcpSocket:
+              port: {{ .Values.image.iglSite.port }}
+          startupProbe:
+            failureThreshold: 3
+            successThreshold: 1
+            timeoutSeconds: 1
+            periodSeconds: 10
+            tcpSocket:
+              port: {{ .Values.image.iglSite.port }}
+            initialDelaySeconds: 5
+          resources:
+            limits:
+              memory: 1Gi
+            requests:
+              memory: 64Mi
+          volumeMounts:
+            - name: host-time
+              readOnly: true
+              mountPath: /etc/localtime
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      volumes:
+        - name: host-time
+          hostPath:
+            path: /etc/localtime
+            type: ''
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: app
+                      operator: In
+                      values:
+                        - {{ .Values.image.iglSite.name }}
+                topologyKey: kubernetes.io/hostname
+              weight: 60
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

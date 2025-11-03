@@ -1,0 +1,87 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.image.system.name }}
+  labels:
+    app: {{ .Values.image.system.name }}
+    {{- include "ctyk-yjk.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ .Values.image.system.name }}
+      {{- include "ctyk-yjk.selectorLabels" . | nindent 6 }}
+  strategy: {{- toYaml .Values.updateStrategy | nindent 4 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        app: {{ .Values.image.system.name }}
+        {{- include "ctyk-yjk.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- include "ctyk-yjk.imagePullSecrets" . | nindent 6 }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Values.image.system.name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.system.repository }}:{{ .Values.image.system.tag }}"
+          imagePullPolicy: IfNotPresent
+          {{- with .Values.env }}
+          env:
+            {{- toYaml . | nindent 12 }}
+          {{- end}}
+          ports:
+            - name: http
+              containerPort: {{ .Values.image.system.port }}
+              protocol: TCP
+          livenessProbe:
+            failureThreshold: 3
+            successThreshold: 1
+            tcpSocket:
+              port: {{ .Values.image.system.port }}
+            initialDelaySeconds: 5
+            timeoutSeconds: 1 
+            periodSeconds: 10
+          readinessProbe:
+            failureThreshold: 3
+            successThreshold: 1
+            initialDelaySeconds: 5
+            timeoutSeconds: 1
+            periodSeconds: 10
+            tcpSocket:
+              port: {{ .Values.image.system.port }}
+          startupProbe:
+            failureThreshold: 3
+            successThreshold: 1
+            timeoutSeconds: 1
+            periodSeconds: 10
+            tcpSocket:
+              port: {{ .Values.image.system.port }}
+            initialDelaySeconds: 5
+          resources:
+          {{- toYaml .Values.resources | nindent 12 }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: app
+                      operator: In
+                      values:
+                        - {{ .Values.image.system.name }}
+                topologyKey: kubernetes.io/hostname
+              weight: 60
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

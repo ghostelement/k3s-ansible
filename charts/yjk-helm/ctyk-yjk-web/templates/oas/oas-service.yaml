@@ -1,0 +1,17 @@
+{{- if .Values.modules.oas.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.image.oas.name }}
+  labels:
+    {{- include "ctyk-yjk.labels" . | nindent 4 }}
+spec:
+  type: ClusterIP
+  ports:
+    - port: {{ .Values.image.oas.port }}
+      targetPort: {{ .Values.image.oas.port }}
+      protocol: TCP
+      name: http
+  selector:
+    app: {{ .Values.image.oas.name }}
+{{- end }}

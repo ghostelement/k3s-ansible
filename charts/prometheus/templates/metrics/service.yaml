@@ -1,0 +1,19 @@
+{{- if .Values.metrics.enabled }}
+kind: Service
+apiVersion: v1
+metadata:
+  labels:
+    app: {{ .Values.metrics.name }}
+  name: {{ .Values.metrics.name }}
+spec:
+  type: {{ .Values.metrics.service.type }}
+  ports:
+  {{- range $key, $value := .Values.metrics.ports }}
+    - name: {{ $key }}
+      port: {{ $value }}
+      targetPort: {{ $value }}
+      protocol: TCP
+  {{- end }}
+  selector:
+    app: {{ .Values.metrics.name }}
+{{- end}}

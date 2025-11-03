@@ -1,0 +1,92 @@
+{{- if .Values.prometheus.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.prometheus.name }}
+  labels:
+    app: {{ .Values.prometheus.name }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ .Values.prometheus.name }}
+  template:
+    metadata:
+      {{- with .Values.prometheus.annotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        app: {{ .Values.prometheus.name }}
+    spec:
+      serviceAccountName: {{ .Values.prometheus.serviceAccountName }}
+      containers:
+        - name: {{ .Values.prometheus.name }}
+          image: "{{ .Values.prometheus.image.repository }}:{{ .Values.prometheus.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.prometheus.image.pullPolicy }}
+          args:
+          {{- range $key, $value :=  .Values.prometheus.args }}
+            - "{{ $value }}"
+          {{- end }}
+          {{- if .Values.prometheus.remoteWrite.enabled }}
+            - "--storage.tsdb.retention=4h"
+          {{- else }}
+            - "--storage.tsdb.retention=180d"
+          {{- end }}
+          command:
+          - "/bin/prometheus"
+          env:
+          {{- with .Values.prometheus.env }}
+          {{- toYaml . | nindent 12 }}
+          {{- end }}
+          resources:
+          {{- toYaml .Values.prometheus.resources | nindent 12 }}
+          ports:
+          {{- range $key, $value :=  .Values.prometheus.ports }}
+            - name: {{ $key }}
+              containerPort: {{ $value }}
+              protocol: TCP
+          {{- end }}
+          livenessProbe:
+            failureThreshold: 3
+            initialDelaySeconds: 10
+            periodSeconds: 30
+            successThreshold: 1
+            tcpSocket:
+              port: 9090
+            timeoutSeconds: 1
+          readinessProbe:
+            failureThreshold: 3
+            initialDelaySeconds: 10
+            periodSeconds: 30
+            successThreshold: 1
+            tcpSocket:
+              port: 9090
+            timeoutSeconds: 1
+          startupProbe:
+            failureThreshold: 3
+            initialDelaySeconds: 10
+            periodSeconds: 30
+            successThreshold: 1
+            tcpSocket:
+              port: 9090
+            timeoutSeconds: 1
+          volumeMounts:
+            - name: config-volume
+              mountPath: "/etc/prometheus"
+            - name: {{ .Values.prometheus.persistence.name }}
+              mountPath: "/prometheus"
+      volumes:
+        - name: config-volume
+          configMap:
+            name: {{ .Values.prometheus.name }}
+            defaultMode: 420
+        - name: {{ .Values.prometheus.persistence.name }}
+          {{- if .Values.prometheus.remoteWrite.enabled }}
+          emptyDir: {}
+          {{- else}}
+          persistentVolumeClaim:
+            claimName: {{ .Values.prometheus.persistence.name }}
+            readOnly: false
+          {{- end }}
+{{- end }}

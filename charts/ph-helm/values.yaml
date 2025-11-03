@@ -1,0 +1,123 @@
+# 副本数
+replicaCount: 1
+
+global:
+  ## @param global.imageRegistry Global Docker image registry
+  imageRegistry: ""
+  ## Optionally specify an array of imagePullSecrets.
+  ## Example:
+  ## imagePullSecrets:
+  ##   - myRegistryKeySecretName
+  imagePullSecrets: []
+
+image:
+  phGateway:
+    name: sanitation-system-gateway
+    repository: 'k3s.harbor:8090/sync/yjk-release-docker/public-health/sanitation-system-gateway'
+    tag: "3.1.9"  ## TODO: 修改为实际版本号
+    port: 8083
+  phAuth:
+    name: public-health-auth
+    repository: 'k3s.harbor:8090/sync/yjk-release-docker/public-health/sanitation-system-auth'
+    tag: "3.1.9"   ## TODO: 修改为实际版本号
+    port: 9203
+  phSystem:
+    name: sanitation-system-modules-system
+    repository: 'k3s.harbor:8090/sync/yjk-release-docker/public-health/sanitation-system-modules-system'
+    tag: "3.1.9"   ## TODO: 修改为实际版本号
+    port: 9217
+  familyDoctor:
+    name: family-doctor
+    repository: 'k3s.harbor:8090/sync/yjk-release-docker/public-health/family-doctor'
+    tag: "3.1.9"   ## TODO: 修改为实际版本号
+    port: 9905
+  phBasic:
+    name: public-health-basic
+    repository: 'k3s.harbor:8090/sync/yjk-release-docker/public-health/public-health-basic'
+    tag: "3.1.9"   ## TODO: 修改为实际版本号
+    port: 9904
+  phForeign:
+    name: public-health-foreign-api
+    repository: 'k3s.harbor:8090/sync/yjk-release-docker/public-health/public-health-foreign-api'
+    tag: "3.1.9"   ## TODO: 修改为实际版本号
+    port: 9918
+  phPublicHealth:
+    name: public-health
+    repository: 'k3s.harbor:8090/sync/yjk-release-docker/public-health/public-health'
+    tag: "3.1.9"   ## TODO: 修改为实际版本号
+    port: 9903
+  phReport:
+    name: report-serve
+    repository: 'k3s.harbor:8090/sync/yjk-release-docker/public-health/report-serve'
+    tag: "3.1.9"  ## TODO: 修改为实际版本号
+    port: 9930
+  phResident:
+    name: resident-serve
+    repository: 'k3s.harbor:8090/sync/yjk-release-docker/public-health/resident-serve'
+    tag: "3.1.9"  ## TODO: 修改为实际版本号
+    port: 9911
+  phFile:
+    name: sanitation-system-modules-file
+    repository: 'k3s.harbor:8090/sync/yjk-release-docker/public-health/sanitation-system-modules-file'
+    tag: "3.1.9"  ## TODO: 修改为实际版本号
+    port: 9301
+  phJob:
+    name: sanitation-system-modules-job
+    repository: 'k3s.harbor:8090/sync/yjk-release-docker/public-health/sanitation-system-modules-job'
+    tag: "3.1.9"  ## TODO: 修改为实际版本号
+    port: 9917
+    jobPort: 9099
+
+  phSite:
+    name: nh-integration-site
+    repository: 'k3s.harbor:8090/sync/yjk-release-docker/public-health/nh-integration-site'
+    tag: "3.1.9"  ## TODO: 修改为实际版本号
+    port: 15201
+    service:
+      type: NodePort   # TODO: 设置对外暴漏服务类型,Ingress NodePort
+      ingressClassName: traefik  # TODO: 设置Ingress类型,默认为traefik
+      domain: "release.ph.local"  # TODO: 设置Ingress域名, 灰度版设置为gray.yjk.local
+      externalPort: 15201  # 如果是NodePort，则需要设置基座对外暴漏端口号
+
+
+nacos:  #TODO: Nacos配置
+  username: "nacos"
+  password: "ctyk@yHJ!Uc45aBn"
+  namespace: "public-health"
+  host: "nacos.default.svc.cluster.local"
+  port: "8848"
+  group: "DEFAULT_GROUP"
+
+env:
+  - name: "TZ"
+    value: "Asia/Shanghai"
+  - name: PROFILE
+    value: "prod"
+  - name: JAVA_OPTS
+    value: "-server -Xms4G -Xmx4G -Xmn512M"
+
+skywalking:
+  enabled: false   #TODO: 开启skywalking，前提是已经部署过skywalking oap服务,否则设为false
+nameOverride: ""
+fullnameOverride: ""
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 4Gi
+  limits:
+    cpu: 4
+    memory: 5Gi
+
+updateStrategy:
+  type: RollingUpdate
+
+podAnnotations: {}
+
+podSecurityContext: {}
+
+securityContext: {}
+
+nodeSelector: {}
+
+tolerations: []

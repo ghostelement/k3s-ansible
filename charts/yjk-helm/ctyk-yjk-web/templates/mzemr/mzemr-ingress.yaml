@@ -1,0 +1,21 @@
+{{- if and (eq .Values.service.type "Ingress") (.Values.modules.mzemr.enabled) }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ .Values.image.mzemr.name }}
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: web
+spec:
+  ingressClassName: {{ .Values.service.ingressClassName }}
+  rules:
+  - host: {{ .Values.service.domain }}
+    http:
+      paths:
+      - path: /mzemr
+        pathType: Prefix
+        backend:
+          service:
+            name: {{ .Values.image.mzemr.name }}  ## 后端service服务名称
+            port:
+              number: {{ .Values.image.mzemr.port }}
+{{- end }}

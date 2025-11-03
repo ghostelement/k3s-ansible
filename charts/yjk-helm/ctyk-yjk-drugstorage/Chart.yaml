@@ -1,0 +1,5 @@
+apiVersion: v2
+description: 智慧医院后端  药房药库服务
+name: ctyk-yjk-drug
+type: application
+version: 1.7.0

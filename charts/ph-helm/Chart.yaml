@@ -1,0 +1,5 @@
+apiVersion: v2
+description: 公卫家医
+name: ctyk-public-health
+type: application
+version: 2.0.0

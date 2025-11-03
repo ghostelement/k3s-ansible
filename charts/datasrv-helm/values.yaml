@@ -1,0 +1,103 @@
+# 副本数
+replicaCount: 1
+
+global:
+  ## @param global.imageRegistry Global Docker image registry
+  imageRegistry: ""
+  ## Optionally specify an array of imagePullSecrets.
+  ## Example:
+  ## imagePullSecrets:
+  ##   - myRegistryKeySecretName
+  imagePullSecrets: []
+
+image:
+  srvGateway:
+    name: luoma-gateway
+    repository: 'k3s.harbor:8090/sync/yjk-release-docker/luoma-v2x/luoma-gateway'
+    tag: "2.0.4"  ## TODO: 修改为实际版本号
+    port: 22080
+  srvGatewayService:
+    name: luoma-gateway-service
+    repository: 'k3s.harbor:8090/sync/yjk-release-docker/luoma-v2x/luoma-gateway-service'
+    tag: "2.0.4"  ## TODO: 修改为实际版本号
+    port: 22180
+  srvAuth:
+    name: luoma-auth
+    repository: 'k3s.harbor:8090/sync/yjk-release-docker/luoma-v2x/luoma-auth'
+    tag: "2.0.4"   ## TODO: 修改为实际版本号
+    port: 22110
+  srvSystem:
+    name: luoma-system
+    repository: 'k3s.harbor:8090/sync/yjk-release-docker/luoma-v2x/luoma-system'
+    tag: "2.0.4"   ## TODO: 修改为实际版本号
+    port: 22120
+  srvSerGateway:
+    name: luoma-service-gateway
+    repository: 'k3s.harbor:8090/sync/yjk-release-docker/luoma-v2x/luoma-service-gateway'
+    tag: "2.0.4"   ## TODO: 修改为实际版本号
+    port: 22140
+  srvService:
+    name: luoma-service
+    repository: 'k3s.harbor:8090/sync/yjk-release-docker/luoma-v2x/luoma-service'
+    tag: "2.0.4"   ## TODO: 修改为实际版本号
+    port: 22130
+  srvWebService:
+    name: luoma-webservice
+    repository: 'k3s.harbor:8090/sync/yjk-release-docker/luoma-v2x/luoma-webservice'
+    tag: "2.0.4"   ## TODO: 修改为实际版本号
+    port: 22150
+  
+
+  srvWeb:
+    name: luoma-ui
+    repository: 'k3s.harbor:8090/sync/yjk-release-docker/luoma-v2x/luoma-ui'
+    tag: "2.0.85"  ## TODO: 修改为实际版本号
+    port: 22081
+    service:
+      type: NodePort   # TODO: 设置对外暴漏服务类型,Ingress NodePort
+      ingressClassName: traefik  # TODO: 设置Ingress类型,默认为traefik
+      domain: "release.datasrv.local"  # TODO: 设置Ingress域名, 灰度版设置为gray.yjk.local
+      externalPort: 22081  # 如果是NodePort，则需要设置基座对外暴漏端口号
+
+
+nacos:  #TODO: Nacos配置
+  username: "nacos"
+  password: "ctyk@yHJ!Uc45aBn"
+  namespace: "datasrv"
+  host: "nacos.default.svc.cluster.local"
+  port: "8848"
+  group: "DEFAULT_GROUP"
+
+env:
+  - name: "TZ"
+    value: "Asia/Shanghai"
+  - name: PROFILE
+    value: "test"
+  - name: JAVA_OPTS
+    value: "-server -Xms1G -Xmx1G -Xmn512M"
+
+skywalking:
+  enabled: false   #TODO: 开启skywalking，前提是已经部署过skywalking oap服务,否则设为false
+nameOverride: ""
+fullnameOverride: ""
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 1Gi
+  limits:
+    cpu: 4
+    memory: 2Gi
+
+updateStrategy:
+  type: RollingUpdate
+
+podAnnotations: {}
+
+podSecurityContext: {}
+
+securityContext: {}
+
+nodeSelector: {}
+
+tolerations: []

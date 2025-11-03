@@ -1,0 +1,5 @@
+apiVersion: v2
+description: 慢病管理系统
+name: ctyk-chronic
+type: application
+version: 2.0.0

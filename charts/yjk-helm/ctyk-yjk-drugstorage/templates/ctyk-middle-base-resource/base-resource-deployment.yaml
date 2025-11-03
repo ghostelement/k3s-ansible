@@ -1,0 +1,167 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.image.baseResource.name }}
+  labels:
+    app: {{ .Values.image.baseResource.name }}
+    {{- include "ctyk-yjk.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ .Values.image.baseResource.name }}
+      {{- include "ctyk-yjk.selectorLabels" . | nindent 6 }}
+  strategy: {{- toYaml .Values.updateStrategy | nindent 4 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        app: {{ .Values.image.baseResource.name }}
+        {{- include "ctyk-yjk.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- include "ctyk-yjk.imagePullSecrets" . | nindent 6 }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Values.image.baseResource.name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.baseResource.repository }}:{{ .Values.image.baseResource.tag }}"
+          imagePullPolicy: IfNotPresent
+          {{- with .Values.env }}
+          env:
+            {{- toYaml . | nindent 12 }}
+          {{- end}}
+            - name: NACOS_HOST_REGISTRY
+              valueFrom:
+                configMapKeyRef:
+                  name: nacos-config
+                  key: nacosHost
+            - name: NACOS_PORT_REGISTRY
+              valueFrom:
+                configMapKeyRef:
+                  name: nacos-config
+                  key: nacosPort
+            - name: NACOS_NAMESPACE_REGISTRY
+              valueFrom:
+                configMapKeyRef:
+                  name: nacos-config
+                  key: nacosNamespace
+            - name: NACOS_USERNAME_REGISTRY
+              valueFrom:
+                configMapKeyRef:
+                  name: nacos-config
+                  key: nacosUsername
+            - name: NACOS_GROUP_REGISTRY
+              valueFrom:
+                configMapKeyRef:
+                  name: nacos-config
+                  key: nacosGroup
+            - name: NACOS_HOST_CONFIG
+              valueFrom:
+                configMapKeyRef:
+                  name: nacos-config
+                  key: nacosHost
+            - name: NACOS_PORT_CONFIG
+              valueFrom:
+                configMapKeyRef:
+                  name: nacos-config
+                  key: nacosPort
+            - name: NACOS_USERNAME_CONFIG
+              valueFrom:
+                configMapKeyRef:
+                  name: nacos-config
+                  key: nacosUsername
+            - name: NACOS_GROUP_CONFIG
+              valueFrom:
+                configMapKeyRef:
+                  name: nacos-config
+                  key: nacosGroup
+            - name: NACOS_NAMESPACE_CONFIG
+              valueFrom:
+                configMapKeyRef:
+                  name: nacos-config
+                  key: nacosNamespace
+            - name: NACOS_PASSWORD_REGISTRY
+              valueFrom:
+                secretKeyRef:
+                  name: nacos-passwd
+                  key: password
+            - name: NACOS_PASSWORD_CONFIG
+              valueFrom:
+                secretKeyRef:
+                  name: nacos-passwd
+                  key: password 
+          
+            - name: Dyk_gray
+              value: "{{ .Values.isGray }}"
+
+          {{- if .Values.skywalking.enabled }}
+            - name: SKY_AGENT
+              value: "-javaagent:/skywalking/skywalking-agent/skywalking-agent.jar -Dskywalking.agent.service_name={{ .Values.image.baseResource.name }}"
+            - name: SKY_SERVER
+              value: '-Dskywalking.collector.backend_service=skywalking-oap.default.svc.cluster.local:11800'
+          {{- end }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.image.baseResource.port }}
+              protocol: TCP
+          livenessProbe:
+            failureThreshold: 3
+            successThreshold: 1
+            tcpSocket:
+              port: {{ .Values.image.baseResource.port }}
+            initialDelaySeconds: 30
+            timeoutSeconds: 1 
+            periodSeconds: 30
+          readinessProbe:
+            failureThreshold: 3
+            successThreshold: 1
+            initialDelaySeconds: 30
+            timeoutSeconds: 1
+            periodSeconds: 30
+            tcpSocket:
+              port: {{ .Values.image.baseResource.port }}
+          startupProbe:
+            failureThreshold: 3
+            successThreshold: 1
+            timeoutSeconds: 1
+            periodSeconds: 30
+            tcpSocket:
+              port: {{ .Values.image.baseResource.port }}
+            initialDelaySeconds: 30
+          resources:
+          {{- toYaml .Values.resources | nindent 12 }}
+          volumeMounts:
+            #容器内日志目录
+            - name: log
+              mountPath: /app/logs
+      volumes:
+        #挂载到宿主机日志持久化目录
+        - name: log
+          hostPath:
+            path: /data/app_logs/yjklogs/ctyk-yjk-middle-base-resource  #持久化目录 @TODO
+            type: DirectoryOrCreate
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: app
+                      operator: In
+                      values:
+                        - {{ .Values.image.baseResource.name }}
+                topologyKey: kubernetes.io/hostname
+              weight: 60
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

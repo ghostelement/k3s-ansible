@@ -1,0 +1,34 @@
+{{- if .Values.alertmanager.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  annotations: {}
+  labels: {}
+  name: {{ .Values.alertmanager.name }}
+data:
+  alertmanager.yml: |-
+    global:
+      resolve_timeout: 5m  #在指定时间内没有新的事件就发送恢复通知
+    templates:
+      - '/alertmanager/template/*.tmpl'  #告警模板
+    inhibit_rules:
+       # source_match: 匹配当前告警发生后其他告警抑制掉
+       - source_match:
+           level: 'Disaster'
+       # target_match:被抑制告警
+         target_match:
+           level: 'Warning'
+       # equal: 只有包含指定标签才可成立规则,这里表示两个告警级别的主机都“相同”时，成功抑制 ，这里也可以写多个标签
+         equal: ['instance']
+    route:
+      receiver: webhook  #设置接收人
+      group_wait: 15s  #组告警等待时间。在等待时间结束后，如果有同组告警一起发出
+      group_interval: 1m  #两组告警间隔时间。
+      repeat_interval: 1m  #重复告警间隔时间，减少相同邮件的发送频率。
+      group_by: ['env','instance','type','group','job','alertname'] #采用那个标签来作为分组。
+    receivers:   #通知接收者列表
+    - name: webhook
+      webhook_configs:
+      - url: {{ .Values.alertmanager.wechatBot }}   #接收告警的企业微信hook
+        send_resolved: true
+{{- end }}

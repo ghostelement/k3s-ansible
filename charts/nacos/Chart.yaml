@@ -1,0 +1,5 @@
+apiVersion: v2
+description: nacos deployment with init script
+name: nacos
+type: application
+version: 0.0.1

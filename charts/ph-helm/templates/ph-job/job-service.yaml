@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.image.phJob.name }}
+  labels:
+    {{- include "ctyk-yjk.labels" . | nindent 4 }}
+  annotations:
+    prometheus.io/port: {{ .Values.image.phJob.port | quote }}  #prometheus监控端口
+    prometheus.io/spring: "true"
+    prometheus.io/path: "actuator/prometheus"
+spec:
+  type: ClusterIP
+  ports:
+    - port: {{ .Values.image.phJob.port }}
+      targetPort: {{ .Values.image.phJob.port }}
+      protocol: TCP
+      name: http
+    - port: {{ .Values.image.phJob.jobPort }}
+      targetPort: {{ .Values.image.phJob.jobPort }}
+      protocol: TCP
+      name: job
+  selector:
+    app: {{ .Values.image.phJob.name }}

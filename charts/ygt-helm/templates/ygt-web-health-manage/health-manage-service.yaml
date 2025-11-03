@@ -1,0 +1,27 @@
+{{- if .Values.health }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.image.ygtHealthManage.name }}
+  labels:
+    {{- include "ctyk-yjk.labels" . | nindent 4 }}
+spec:
+  {{- if eq .Values.image.ygtHealthManage.service.type "NodePort" }}
+  type: NodePort
+  ports:
+    - port: {{ .Values.image.ygtHealthManage.port }}
+      targetPort: {{ .Values.image.ygtHealthManage.port }}
+      nodePort: {{ .Values.image.ygtHealthManage.service.externalPort }}
+      protocol: TCP
+      name: http
+  {{- else }}
+  type: ClusterIP
+  ports:
+    - port: {{ .Values.image.ygtHealthManage.port }}
+      targetPort: {{ .Values.image.ygtHealthManage.port }}
+      protocol: TCP
+      name: http
+  {{- end }}
+  selector:
+    app: {{ .Values.image.ygtHealthManage.name }}
+{{- end }}

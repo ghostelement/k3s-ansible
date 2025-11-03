@@ -1,0 +1,5 @@
+apiVersion: v2
+description: 智慧医院后端  手术麻醉
+name: ctyk-yjk-oas
+type: application
+version: 1.7.0

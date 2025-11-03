@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.image.businessCsesshis.name }}
+  labels:
+    {{- include "ctyk-yjk.labels" . | nindent 4 }}
+  annotations:
+    prometheus.io/port: {{ .Values.image.businessCsesshis.port | quote }}  #prometheus监控端口
+    prometheus.io/spring: "true"
+    prometheus.io/path: "actuator/prometheus"
+spec:
+  type: ClusterIP
+  ports:
+    - port: {{ .Values.image.businessCsesshis.port }}
+      targetPort: {{ .Values.image.businessCsesshis.port }}
+      protocol: TCP
+      name: http
+    - port: 20469
+      targetPort: 20469
+      protocol: TCP
+      name: socket
+  selector:
+    app: {{ .Values.image.businessCsesshis.name }}

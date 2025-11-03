@@ -1,0 +1,22 @@
+{{- if eq .Values.isGray "false" }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.image.ctykGatewayOpen.name }}
+  labels:
+    {{- include "ctyk-yjk.labels" . | nindent 4 }}
+  annotations:
+    prometheus.io/port: {{ .Values.image.ctykGatewayOpen.port | quote }}  #prometheus监控端口
+    prometheus.io/spring: "true"
+    prometheus.io/path: "actuator/prometheus"
+spec:
+  type: NodePort
+  ports:
+    - port: {{ .Values.image.ctykGatewayOpen.port }}
+      targetPort: {{ .Values.image.ctykGatewayOpen.port }}
+      nodePort: {{ .Values.image.ctykGatewayOpen.externalPort }}
+      protocol: TCP
+      name: http
+  selector:
+    app: {{ .Values.image.ctykGatewayOpen.name }}
+{{- end }}

@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.image.cdSnailjob.name }}
+  labels:
+    {{- include "ctyk-yjk.labels" . | nindent 4 }}
+  annotations:
+    prometheus.io/port: {{ .Values.image.cdSnailjob.port | quote }}  #prometheus监控端口
+    prometheus.io/spring: "true"
+    prometheus.io/path: "actuator/prometheus"
+spec:
+  type: NodePort
+  ports:
+    - port: {{ .Values.image.cdSnailjob.port }}
+      targetPort: {{ .Values.image.cdSnailjob.port }}
+      nodePort: {{ .Values.image.cdSnailjob.externalPort }}
+      protocol: TCP
+      name: http
+  selector:
+    app: {{ .Values.image.cdSnailjob.name }}

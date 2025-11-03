@@ -1,0 +1,125 @@
+
+{{- if .Values.promtail.enabled }}
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: {{ .Values.promtail.name }}
+  labels:
+    app: {{ .Values.promtail.name }}
+spec:
+  selector:
+    matchLabels:
+      app: {{ .Values.promtail.name }}
+      type: daemonset
+      author: k8s
+  template:
+    metadata: 
+      labels:
+        app: {{ .Values.promtail.name }}
+        type: daemonset
+        author: k8s
+    spec:
+      containers:
+      - name: {{ .Values.promtail.name }}
+        image: "{{ .Values.promtail.image.repository }}:{{ .Values.promtail.image.tag }}"
+        imagePullPolicy: IfNotPresent
+        args:
+        - -config.file=/etc/promtail/promtail.yaml
+        env:
+        - name: HOSTNAME
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: spec.nodeName
+        - name: TZ
+          value: Asia/Shanghai
+        ports:
+        - containerPort: 3101
+          name: http-metrics
+          protocol: TCP
+        securityContext:
+        #  readOnlyRootFilesystem: true
+          runAsGroup: 0
+          runAsUser: 0
+        livenessProbe:
+          failureThreshold: 3
+          initialDelaySeconds: 5
+          periodSeconds: 30
+          successThreshold: 1
+          tcpSocket:
+            port: 3101
+          timeoutSeconds: 1
+        readinessProbe:
+          failureThreshold: 3
+          initialDelaySeconds: 5
+          periodSeconds: 30
+          successThreshold: 1
+          tcpSocket:
+            port: 3101
+          timeoutSeconds: 1
+        resources:
+          limits:
+            memory: 512Mi
+          requests:
+            memory: 128Mi
+        startupProbe:
+          failureThreshold: 3
+          initialDelaySeconds: 5
+          periodSeconds: 30
+          successThreshold: 1
+          tcpSocket:
+            port: 3101
+          timeoutSeconds: 1
+        volumeMounts:
+        - mountPath: /etc/promtail
+          name: promtail-configmap
+        - mountPath: /run/promtail
+          name: run
+        - mountPath: /var/lib/kubelet/pods
+          name: kubelet
+          readOnly: true
+        - mountPath: /var/lib/rancher/k3s/agent/containerd
+          name: container
+          readOnly: true
+        - mountPath: /data/app_logs
+          name: app-log
+          readOnly: true
+        - mountPath: /var/log/pods
+          name: pod-log
+          readOnly: true
+        - name: timezone
+          mountPath: /etc/localtime
+      volumes:
+      - configMap:
+          defaultMode: 420
+          name: promtail-configmap
+        name: promtail-configmap
+      - name: timezone
+        hostPath:
+          path: /usr/share/zoneinfo/Asia/Shanghai
+      - hostPath:
+          path: /run/promtail
+          type: ""
+        name: run
+      - hostPath:
+          path: /var/lib/kubelet/pods
+          type: ""
+        name: kubelet
+      - hostPath:
+          path: /var/lib/rancher/k3s/agent/containerd
+          type: ""
+        name: container
+      - hostPath:
+          #应用日志挂载目录
+          path: /data/app_logs
+          type: DirectoryOrCreate 
+        name: app-log
+      - hostPath:
+          path: /var/log/pods
+          type: ""
+        name: pod-log
+      serviceAccount: {{ .Values.promtail.serviceAccountName }}
+      serviceAccountName: {{ .Values.promtail.serviceAccountName }}
+  updateStrategy:
+    type: RollingUpdate
+{{- end }}

@@ -1,0 +1,33 @@
+global:
+  ## @param global.imageRegistry Global Docker image registry
+  imageRegistry: ""
+  ## Optionally specify an array of imagePullSecrets.
+  ## Example:
+  ## imagePullSecrets:
+  ##   - myRegistryKeySecretName
+  imagePullSecrets: []
+image:
+  kuboard:
+    name: kuboard
+    repository: 'k3s.harbor:8090/library/kuboard'
+    tag: "v3.5.2.9"   ## TODO: 修改为实际版本号
+env:
+  - name: KUBOARD_DISABLE_AUDIT
+    value: "true"
+
+nameOverride: ""
+fullnameOverride: ""
+resources:
+  requests:
+    cpu: 100m
+    memory: 1Gi
+  limits:
+    cpu: 4
+    memory: 2Gi
+persistence:
+  name: kuboard-data
+  storageClassName: nfs-storage
+  accessModes:
+    - ReadWriteOnce
+  size: 5Gi
+externalPort: 8090  # TODO: 设置对外暴漏端口号

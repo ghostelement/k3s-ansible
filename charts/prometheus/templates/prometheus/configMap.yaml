@@ -1,0 +1,359 @@
+{{- if .Values.prometheus.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Values.prometheus.name }}
+data:
+  prometheus.yml: |
+    global:
+      scrape_interval:     30s
+      evaluation_interval: 30s
+    {{- if .Values.prometheus.remoteWrite.enabled }}
+    remote_write:
+      - url: {{ .Values.prometheus.remoteWrite.remoteUrl }}/api/v1/write
+        queue_config:
+          max_samples_per_send: 10000
+          capacity: 5000
+          max_shards: 10
+        basic_auth:
+          username: {{ .Values.prometheus.remoteWrite.username }}
+          password: {{ .Values.prometheus.remoteWrite.password }}
+    {{- end }}
+    alerting: 
+      alertmanagers:
+        - static_configs:
+            - targets:
+              - "{{ .Values.alertmanager.name }}:9093"
+    rule_files:
+      - "/etc/prometheus/rules.yml"   #报警规则文件
+    #  - "cpu_over.yml"
+    #  - "disk_over.yml"
+    #  - "memory_over.yml"
+    #  - "node_alived.yml"
+    scrape_configs:
+    #基于文件的动态服务发现
+    - job_name: "file-sd"
+      metrics_path: /metrics
+      file_sd_configs:
+      - files:
+        - /prometheus/file_sd/*.json
+        - /prometheus/file_sd/*.yml
+        refresh_interval: 60s    #每隔60秒刷新一次文件
+    - job_name: linux_host
+      static_configs:
+        - targets:
+          {{- range .Values.prometheus.targetHost }}
+            - {{ .}}
+          {{- end }}
+    - job_name: kube-state-metrics
+      static_configs:
+        - targets: ['kube-state-metrics:8080']
+    - job_name: 'kubernetes-apiservers'
+      kubernetes_sd_configs:
+      - role: endpoints
+      scheme: https
+      tls_config:
+        ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+      bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+      relabel_configs:
+      - source_labels: [__meta_kubernetes_namespace, __meta_kubernetes_service_name, __meta_kubernetes_endpoint_port_name]
+        action: keep
+        regex: default;kubernetes;https
+ 
+    - job_name: 'kubernetes-nodes'
+      kubernetes_sd_configs:
+      - role: node
+      scheme: https
+      tls_config:
+        ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+      bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+      relabel_configs:
+      - action: labelmap
+        regex: __meta_kubernetes_node_label_(.+)
+      - target_label: __address__
+        replacement: kubernetes.default.svc:443
+      - source_labels: [__meta_kubernetes_node_name]
+        regex: (.+)
+        target_label: __metrics_path__
+        replacement: /api/v1/nodes/${1}/proxy/metrics
+ 
+    - job_name: 'kubernetes-cadvisor'
+      kubernetes_sd_configs:
+      - role: node
+      scheme: https
+      tls_config:
+        ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+      bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+      relabel_configs:
+      - action: labelmap
+        regex: __meta_kubernetes_node_label_(.+)
+      - target_label: __address__
+        replacement: kubernetes.default.svc:443
+      - source_labels: [__meta_kubernetes_node_name]
+        regex: (.+)
+        target_label: __metrics_path__
+        replacement: /api/v1/nodes/${1}/proxy/metrics/cadvisor
+      - source_labels: [__meta_kubernetes_node_name]
+        target_label: node
+ 
+    - job_name: 'kubernetes-service-endpoints'
+      kubernetes_sd_configs:
+      - role: endpoints
+      relabel_configs:
+      - source_labels: [__meta_kubernetes_service_annotation_prometheus_io_scrape]
+        action: keep
+        regex: true
+      - source_labels: [__meta_kubernetes_service_annotation_prometheus_io_scheme]
+        action: replace
+        target_label: __scheme__
+        regex: (https?)
+      - source_labels: [__meta_kubernetes_service_annotation_prometheus_io_path]
+        action: replace
+        target_label: __metrics_path__
+        regex: (.+)
+      - source_labels: [__address__, __meta_kubernetes_service_annotation_prometheus_io_port]
+        action: replace
+        target_label: __address__
+        regex: ([^:]+)(?::\d+)?;(\d+)
+        replacement: $1:$2
+      - action: labelmap
+        regex: __meta_kubernetes_service_label_(.+)
+      - source_labels: [__meta_kubernetes_namespace]
+        action: replace
+        target_label: kubernetes_namespace
+      - source_labels: [__meta_kubernetes_service_name]
+        action: replace
+        target_label: kubernetes_name
+ 
+    - job_name: 'kubernetes-services'
+      kubernetes_sd_configs:
+      - role: service
+      metrics_path: /probe
+      params:
+        module: [http_2xx]
+      relabel_configs:
+      - source_labels: [__meta_kubernetes_service_annotation_prometheus_io_probe]
+        action: keep
+        regex: true
+      - source_labels: [__address__]
+        target_label: __param_target
+      - target_label: __address__
+        replacement: blackbox-exporter.example.com:9115
+      - source_labels: [__param_target]
+        target_label: instance
+      - action: labelmap
+        regex: __meta_kubernetes_service_label_(.+)
+      - source_labels: [__meta_kubernetes_namespace]
+        target_label: kubernetes_namespace
+      - source_labels: [__meta_kubernetes_service_name]
+        target_label: kubernetes_name
+ 
+    - job_name: 'kubernetes-ingresses'
+      kubernetes_sd_configs:
+      - role: ingress
+      relabel_configs:
+      - source_labels: [__meta_kubernetes_ingress_annotation_prometheus_io_probe]
+        action: keep
+        regex: true
+      - source_labels: [__meta_kubernetes_ingress_scheme,__address__,__meta_kubernetes_ingress_path]
+        regex: (.+);(.+);(.+)
+        replacement: ${1}://${2}${3}
+        target_label: __param_target
+      - target_label: __address__
+        replacement: blackbox-exporter.example.com:9115
+      - source_labels: [__param_target]
+        target_label: instance
+      - action: labelmap
+        regex: __meta_kubernetes_ingress_label_(.+)
+      - source_labels: [__meta_kubernetes_namespace]
+        target_label: kubernetes_namespace
+      - source_labels: [__meta_kubernetes_ingress_name]
+        target_label: kubernetes_name
+ 
+    - job_name: 'kubernetes-pods'
+      kubernetes_sd_configs:
+      - role: pod
+      relabel_configs:
+      - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
+        action: keep
+        regex: true
+      - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_path]
+        action: replace
+        target_label: __metrics_path__
+        regex: (.+)
+      - source_labels: [__address__, __meta_kubernetes_pod_annotation_prometheus_io_port]
+        action: replace
+        regex: ([^:]+)(?::\d+)?;(\d+)
+        replacement: $1:$2
+        target_label: __address__
+      - action: labelmap
+        regex: __meta_kubernetes_pod_label_(.+)
+      - source_labels: [__meta_kubernetes_namespace]
+        action: replace
+        target_label: kubernetes_namespace
+      - source_labels: [__meta_kubernetes_pod_name]
+        action: replace
+        target_label: kubernetes_pod_name
+    
+    #自动发现springboot项目jvm监控
+    - job_name: 'spring-metrics'
+      basic_auth:    #鉴权认证
+        username: "ctyk"
+        password: "dianxiM@9840"
+      kubernetes_sd_configs:
+      - role: endpoints
+      relabel_configs:
+      - source_labels: [__meta_kubernetes_service_annotation_prometheus_io_spring]
+        action: keep
+        regex: true
+      - source_labels: [__meta_kubernetes_service_annotation_prometheus_io_path]
+        action: replace
+        target_label: __metrics_path__
+        regex: (.+)
+      - source_labels: [__address__, __meta_kubernetes_service_annotation_prometheus_io_port]
+        action: replace
+        target_label: __address__
+        regex: ([^:]+)(?::\d+)?;(\d+)
+        replacement: $1:$2
+      - action: labelmap
+        regex: __meta_kubernetes_service_label_(.+)
+      - source_labels: [__meta_kubernetes_namespace]
+        action: replace
+        target_label: spring_namespace
+      - source_labels: [__meta_kubernetes_service_name]
+        action: replace
+        target_label: spring_name
+    #rocketMQ
+    - job_name: 'rocketmq-exporter'
+      static_configs:
+      - targets: ['rocketmq-exporter:5557']
+        labels:
+          env: prod_rocketmq
+          app: rocketmq
+          instance: rocketmq-nameserver:9876
+  rules.yml: |
+    groups:
+    - name: node-up
+      rules:
+      - alert: node-up
+        expr: up{job="linux_host"} == 0
+        for: 30s
+        labels:
+          severity: Disaster
+          team: node
+        annotations:
+          summary: "{{`{{ $labels.instance }}`}} 已停止运行超过 30s！"
+    - name: k8s-pod容器故障
+      rules:
+      - alert: k8s-pod容器启动失败
+        expr: kube_pod_container_status_waiting_reason{reason="CreateContainerConfigError"} > 0
+        for: 1m
+        labels:
+          user: prometheus
+          severity: Warning
+        annotations:
+          description: "k8s集群{{`{{$labels.namespace}}`}} : {{`{{$labels.pod}}`}}启动失败!"
+          summary: "k8s集群{{`{{$labels.namespace}}`}} : {{`{{$labels.pod}}`}}启动失败!"
+          value: 1
+      - alert: k8s-pod重启过多
+        expr: kube_pod_container_status_restarts_total > 10
+        for: 1m
+        labels:
+          user: prometheus
+          severity: Warning
+        annotations:
+          description: "k8s集群{{`{{$labels.namespace}}`}} : {{`{{$labels.pod}}`}}重启过多! (当前值: {{`{{ $value }}`}})"
+          summary: "k8s集群{{`{{$labels.namespace}}`}} : {{`{{$labels.pod}}`}}重启过多! (当前值: {{`{{ $value }}`}})"
+          value: 10
+      - alert: k8s-pod拉取镜像失败
+        expr: kube_pod_container_status_waiting_reason{reason="ImagePullBackOff"} > 0
+        for: 1m
+        labels:
+          user: prometheus
+          severity: Warning
+        annotations:
+          description: "k8s集群{{`{{$labels.namespace}}`}} : {{`{{$labels.pod}}`}}拉取镜像失败!"
+          summary: "k8s集群{{`{{$labels.namespace}}`}} : {{`{{$labels.pod}}`}}拉取镜像失败!"
+          value: 1
+    - name: CPU报警规则
+      rules:
+      - alert: CPU使用率告警
+        expr: 100 - (avg by (instance)(irate(node_cpu_seconds_total{mode="idle"}[1m]) )) * 100 > 90
+        for: 1m
+        labels:
+          user: prometheus
+          severity: Warning
+        annotations:
+          description: "服务器: CPU使用超过90%！(当前值: {{`{{ $value }}`}}%)"
+          summary: "服务器: CPU使用超过90%！(当前值: {{`{{ $value }}`}}%)"
+          value: 90%
+    - name: 内存报警规则
+      rules:
+      - alert: 内存使用率告警
+        expr: (1 - (node_memory_MemAvailable_bytes / (node_memory_MemTotal_bytes)))* 100 > 80
+        for: 1m
+        labels:
+          user: prometheus
+          severity: Warning
+        annotations:
+          description: "服务器: 内存使用超过80%！(当前值: {{`{{ $value }}`}}%)"
+          summary: "服务器: 内存使用超过80%！(当前值: {{`{{ $value }}`}}%)"
+          value: 80%
+    - name: 主机磁盘使用率告警
+      rules:
+      - alert: 主机磁盘使用率告警
+        expr: 100 - node_filesystem_free_bytes{fstype=~"xfs|ext4"} / node_filesystem_size_bytes{fstype=~"xfs|ext4"} * 100 > 80 
+        for: 15m
+        labels:
+          severity: Warning
+        annotations:
+          description: "磁盘使用率大于80%, 实例: {{`{{ $labels.instance }}`}}，当前值：{{`{{ $value }}`}}%"
+          summary: "磁盘使用率大于80%, 实例: {{`{{ $labels.instance }}`}}，当前值：{{`{{ $value }}`}}%"
+          value: 80%
+    - name: 主机iowait较高
+      rules:
+      - alert: 主机iowait较高
+        expr: (sum(increase(node_cpu_seconds_total{mode='iowait'}[5m]))by(instance)) / (sum(increase(node_cpu_seconds_total[5m]))by(instance))  *100 >= 10
+        for: 5m
+        labels:
+          severity: Warning
+        annotations:
+          description: "CPU ioWait近5分钟占比大于等于10%, 实例: {{`{{ $labels.instance }}`}}，当前值：{{`{{ $value }}`}}%"
+          summary: "CPU ioWait近5分钟占比大于等于10%, 实例: {{`{{ $labels.instance }}`}}，当前值：{{`{{ $value }}`}}%"
+    #rocketMQ
+    - name: RocketMQ告警
+      rules:
+      - alert: RocketMQ Exporter is Down 
+        expr: up{job="rocketmq"} == 0
+        for: 30s
+        labels: 
+          severity: disaster
+        annotations:
+          description: RocketMQ Exporter is Down
+          summary: RocketMQ 实例{{`{{ $labels.instance }}`}} is down
+      - alert: RocketMQ 存在消息积压
+        expr: (sum(irate(rocketmq_producer_offset[1m])) by (topic)  - on(topic) group_right sum(irate(rocketmq_consumer_offset[1m])) by (group,topic)) > 5
+        for: 5m
+        labels: 
+          severity: warning
+        annotations:
+          description: 'Topic: {{`{{ $labels.topic }}`}} 存在消息积压,积压数 = {{`{{ .Value }}`}}'
+          summary: RocketMQ (group={{`{{ $labels.group }}`}} topic={{`{{ $labels.topic }}`}})积压数 = {{`{{ .Value }}`}}
+      - alert: GroupGetLatencyByStoretime 消费组的消费延时时间过高
+        expr: rocketmq_group_get_latency_by_storetime/1000  > 10 and rate(rocketmq_group_get_latency_by_storetime[5m]) >0
+        for: 3m
+        labels:
+          severity: warning
+        annotations:
+          description: 'consumer {{`{{$labels.group}}`}} on {{`{{$labels.broker}}`}}, {{`{{$labels.topic}}`}} consume time lag behind message store time
+            and (behind value is {{`{{$value}}`}}).'
+          summary: 消费组的消费延时时间过高
+      - alert: RocketMQClusterProduceHigh 集群TPS > 20
+        expr: sum(rocketmq_producer_tps) by (cluster) >= 20
+        for: 3m
+        labels:
+          severity: warning
+        annotations:
+          description: '{{`{{$labels.cluster}}`}} Sending tps too high. now TPS = {{`{{ .Value }}`}}'
+          summary: 集群TPS过高
+{{- end }}

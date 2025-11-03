@@ -1,0 +1,17 @@
+{{- if .Values.modules.hsz.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.image.hsz.name }}
+  labels:
+    {{- include "ctyk-yjk.labels" . | nindent 4 }}
+spec:
+  type: ClusterIP
+  ports:
+    - port: {{ .Values.image.hsz.port }}
+      targetPort: {{ .Values.image.hsz.port }}
+      protocol: TCP
+      name: http
+  selector:
+    app: {{ .Values.image.hsz.name }}
+{{- end }}

@@ -1,0 +1,15 @@
+{{- if and .Values.prometheus.enabled (not .Values.prometheus.remoteWrite.enabled) }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ .Values.prometheus.persistence.name }}
+spec:
+  accessModes:
+  {{- range .Values.prometheus.persistence.accessModes }}
+    - {{ . | quote }}
+  {{- end }}
+  resources:
+    requests:
+      storage: {{ .Values.prometheus.persistence.size }}
+  storageClassName: {{ .Values.prometheus.persistence.storageClassName }}
+{{- end }}

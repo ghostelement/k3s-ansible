@@ -1,0 +1,134 @@
+# 副本数
+replicaCount: 1
+
+global:
+  ## @param global.imageRegistry Global Docker image registry
+  imageRegistry: ""
+  ## Optionally specify an array of imagePullSecrets.
+  ## Example:
+  ## imagePullSecrets:
+  ##   - myRegistryKeySecretName
+  imagePullSecrets: []
+
+image:
+  ctykAuth:
+    name: ctyk-auth
+    repository: 'k3s.harbor:8090/sync/yjk-release-docker/smart-hospital/server/ctyk-auth'
+    tag: "v1.7.2-release-tag"   ## TODO: 修改为实际版本号
+    port: 20101
+  ctykUpload:
+    name: ctyk-core-component-upload
+    repository: 'k3s.harbor:8090/sync/yjk-release-docker/smart-hospital/server/ctyk-yjk-core-component-upload'
+    tag: "v1.7.2-tag-2"   ## TODO: 修改为实际版本号
+    port: 20110
+  ctykGateway:
+    name: ctyk-gateway
+    repository: 'k3s.harbor:8090/sync/yjk-release-docker/smart-hospital/server/ctyk-gateway'
+    tag: "v1.7.2-release-tag"   ## TODO: 修改为实际版本号
+    port: 10007
+  ctykGatewayOpen:
+    name: ctyk-gateway-open
+    repository: 'k3s.harbor:8090/sync/yjk-release-docker/smart-hospital/server/ctyk-gateway-open'
+    tag: "v1.7.2-release-tag"   ## TODO: 修改为实际版本号
+    port: 10006
+    externalPort: 10006
+  ctykOpenAgent:
+    name: ctyk-agent-server
+    repository: 'k3s.harbor:8090/sync/yjk-release-docker/smart-hospital/server/ctyk-yjk-agent-server'
+    tag: "v1.6.0-release-tag"
+    port: 20142
+  ctykOpenPlatform:
+    name: ctyk-yjk-open-platform
+    repository: 'k3s.harbor:8090/sync/yjk-release-docker/smart-hospital/server/ctyk-yjk-open-platform'
+    tag: "v1.6.0-release-tag"
+    port: 20140
+  appUpms:
+    name: ctyk-app-upms
+    repository: 'k3s.harbor:8090/sync/yjk-release-docker/smart-hospital/server/ctyk-yjk-system-app-upms'
+    tag: "v1.7.14-release-tag"   ## TODO: 修改为实际版本号
+    port: 20130
+  middlePatient:
+    name: ctyk-middle-base-patient
+    repository: 'k3s.harbor:8090/sync/yjk-release-docker/smart-hospital/server/ctyk-yjk-middle-base-patient'
+    tag: "v1.7.14-release-tag"   ## TODO: 修改为实际版本号
+    port: 20132
+  middleUser:
+    name: ctyk-middle-base-user
+    repository: 'k3s.harbor:8090/sync/yjk-release-docker/smart-hospital/server/ctyk-yjk-middle-base-user'
+    tag: "v1.7.7-release-tag"   ## TODO: 修改为实际版本号
+    port: 20133
+  middleUpms:
+    name: ctyk-middle-business-upms
+    repository: 'k3s.harbor:8090/sync/yjk-release-docker/smart-hospital/server/ctyk-yjk-middle-business-upms'
+    tag: "v1.7.11-release-tag"   ## TODO: 修改为实际版本号
+    port: 20131
+  seata:
+    name: ctyk-seata
+    repository: 'k3s.harbor:8090/sync/yjk-release-docker/smart-hospital/server/ctyk-seata'
+    tag: "v1.5.0-release-tag"   ## TODO: 修改为实际版本号
+    port: 8091
+  appCtreport:
+    name: ctyk-app-ctreport
+    repository: 'k3s.harbor:8090/sync/yjk-release-docker/smart-hospital/server/ctyk-yjk-ctreport-app-ctreport'
+    tag: "v1.7.0-release-tag"   ## TODO: 修改为实际版本号
+    port: 20570
+  businessCtreport:
+    name: ctyk-business-ctreport
+    repository: 'k3s.harbor:8090/sync/yjk-release-docker/smart-hospital/server/ctyk-yjk-middle-business-ctreport'
+    tag: "v1.7.3-release-tag"   ## TODO: 修改为实际版本号
+    port: 20571
+  webSocket:
+    name: ctyk-websocket
+    repository: 'k3s.harbor:8090/sync/yjk-release-docker/smart-hospital/server/ctyk-yjk-websocket'
+    tag: "v1.7.0-release-tag"
+    port: 20111
+  appJob:
+    ## admin nH46nJBs
+    name: ctyk-app-job
+    repository: 'k3s.harbor:8090/sync/yjk-release-docker/smart-hospital/server/ctyk-yjk-app-job'
+    tag: "v1.7.0-release-tag"   ## TODO: 修改为实际版本号
+    port: 11062
+    externalPort: 11062
+    
+nacos:  #TODO: Nacos配置
+  username: "nacos"
+  password: "ctyk@yHJ!Uc45aBn"
+  namespace: "ctyk-yjk"
+  host: "nacos.default.svc.cluster.local"
+  port: "8848"
+  group: "DEFAULT_GROUP"
+
+env:
+  - name: "TZ"
+    value: "Asia/Shanghai"
+  - name: PROFILE
+    value: "prod"
+  - name: JAVA_OPTS
+    value: "-server -Xms2G -Xmx2G -Xmn512M"
+
+isGray: "false"  # TODO: 是否为灰度版本,灰度版本会在变量中添加Dyk_gray=true
+skywalking:
+  enabled: false   #TODO: 开启skywalking，前提是已经部署过skywalking oap服务,否则设为false
+nameOverride: ""
+fullnameOverride: ""
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 2Gi
+  limits:
+    cpu: 4
+    memory: 3Gi
+
+updateStrategy:
+  type: RollingUpdate
+
+podAnnotations: {}
+
+podSecurityContext: {}
+
+securityContext: {}
+
+nodeSelector: {}
+
+tolerations: []

@@ -1,0 +1,67 @@
+{{- if .Values.es.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.es.name }}
+  labels:
+    app: {{ .Values.es.name }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ .Values.es.name }}
+  template:
+    metadata:
+      annotations:
+      labels:
+        app: {{ .Values.es.name }}
+    spec:
+      containers:
+        - name: {{ .Values.es.name }}
+          image: "{{ .Values.es.image.repository }}:{{ .Values.es.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.es.image.imagePullPolicy }}
+          ports:
+          {{- range $key, $value :=  .Values.es.ports }}
+            - name: {{ $key }}
+              containerPort: {{ $value }}
+              protocol: TCP
+          {{- end }}
+          env:
+          {{- toYaml .Values.es.env | nindent 12 }}
+          {{- if .Values.es.resources }}
+          resources:
+            {{- toYaml .Values.es.resources | nindent 12 }}
+          {{- end }}
+          livenessProbe:
+            failureThreshold: 3
+            initialDelaySeconds: 10
+            periodSeconds: 30
+            successThreshold: 1
+            tcpSocket:
+              port: 9200
+            timeoutSeconds: 1
+          readinessProbe:
+            failureThreshold: 3
+            initialDelaySeconds: 10
+            periodSeconds: 30
+            successThreshold: 1
+            tcpSocket:
+              port: 9200
+            timeoutSeconds: 1
+          startupProbe:
+            failureThreshold: 3
+            initialDelaySeconds: 10
+            periodSeconds: 30
+            successThreshold: 1
+            tcpSocket:
+              port: 9200
+            timeoutSeconds: 1
+          volumeMounts:
+            - name: {{ .Values.es.persistence.name }}
+              mountPath: /usr/share/elasticsearch/data
+      volumes:
+        - name: {{ .Values.es.persistence.name }}
+          persistentVolumeClaim:
+            claimName: {{ .Values.es.persistence.name }}
+            readOnly: false
+{{- end }}

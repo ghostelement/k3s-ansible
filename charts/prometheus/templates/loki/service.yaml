@@ -1,0 +1,19 @@
+{{- if .Values.loki.enabled }}
+kind: Service
+apiVersion: v1
+metadata:
+  labels:
+    app: {{ .Values.loki.name }}
+  name: {{ .Values.loki.name }}
+spec:
+  type: {{ .Values.loki.service.type }}
+  ports:
+  {{- range $key, $value := .Values.loki.ports }}
+    - name: {{ $key }}
+      port: {{ $value }}
+      targetPort: {{ $value }}
+      protocol: TCP
+  {{- end }}
+  selector:
+    app: {{ .Values.loki.name }}
+{{- end}}

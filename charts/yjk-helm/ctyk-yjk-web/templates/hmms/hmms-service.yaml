@@ -1,0 +1,17 @@
+{{- if .Values.modules.hmms.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.image.hmms.name }}
+  labels:
+    {{- include "ctyk-yjk.labels" . | nindent 4 }}
+spec:
+  type: ClusterIP
+  ports:
+    - port: {{ .Values.image.hmms.port }}
+      targetPort: {{ .Values.image.hmms.port }}
+      protocol: TCP
+      name: http
+  selector:
+    app: {{ .Values.image.hmms.name }}
+{{- end }}

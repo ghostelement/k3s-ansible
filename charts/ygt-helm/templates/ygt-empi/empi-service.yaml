@@ -1,0 +1,21 @@
+{{- if .Values.empi }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.image.ygtEmpi.name }}
+  labels:
+    {{- include "ctyk-yjk.labels" . | nindent 4 }}
+  annotations:
+    prometheus.io/port: {{ .Values.image.ygtEmpi.port | quote }}  #prometheus监控端口
+    prometheus.io/spring: "true"
+    prometheus.io/path: "actuator/prometheus"
+spec:
+  type: ClusterIP
+  ports:
+    - port: {{ .Values.image.ygtEmpi.port }}
+      targetPort: {{ .Values.image.ygtEmpi.port }}
+      protocol: TCP
+      name: http
+  selector:
+    app: {{ .Values.image.ygtEmpi.name }}
+{{- end }}

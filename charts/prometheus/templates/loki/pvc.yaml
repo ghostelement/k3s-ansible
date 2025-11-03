@@ -1,0 +1,15 @@
+{{- if .Values.loki.enabled }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ .Values.loki.persistence.name }}
+spec:
+  accessModes:
+  {{- range .Values.loki.persistence.accessModes }}
+    - {{ . | quote }}
+  {{- end }}
+  resources:
+    requests:
+      storage: {{ .Values.loki.persistence.size }}
+  storageClassName: {{ .Values.loki.persistence.storageClassName }}
+{{- end }}

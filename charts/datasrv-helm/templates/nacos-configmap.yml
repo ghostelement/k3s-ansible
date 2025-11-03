@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nacos-config
+data:
+  nacosHost: "{{ .Values.nacos.host }}"
+  nacosPort: "{{ .Values.nacos.port }}"
+  nacosUsername: "{{ .Values.nacos.username }}"
+  nacosPassword: "{{ .Values.nacos.password }}"
+  nacosNamespace: "{{ .Values.nacos.namespace }}"
+  nacosGroup: "{{ .Values.nacos.group }}"
+  

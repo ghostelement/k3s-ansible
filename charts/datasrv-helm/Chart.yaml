@@ -1,0 +1,5 @@
+apiVersion: v2
+description: 医疗服务总线
+name: datasrv
+type: application
+version: 2.0.0

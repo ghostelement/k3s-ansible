@@ -1,0 +1,64 @@
+---
+{{- if .Values.metrics.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations: {}
+  labels:
+    app: {{ .Values.metrics.name }}
+  name: {{ .Values.metrics.name }}
+spec:
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: {{ .Values.metrics.name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.metrics.name }}
+    spec:
+      containers:
+        - name: {{ .Values.metrics.name }}
+          args:
+          - --rocketmq.config.namesrvAddr={{ include "rocketmq-nameserver.fullname" . }}:9876
+          command:
+            - java
+            - '-server'
+            - '-Xms256m'
+            - '-Xmx256m'
+            - '-Xmn128m'
+            - '-jar'
+            - rocketmq-exporter.jar
+          env:
+          {{- toYaml .Values.metrics.env | nindent 12 }}
+          image: "{{ .Values.metrics.image.repository }}:{{ .Values.metrics.image.tag }}"
+          imagePullPolicy: {{ .Values.metrics.image.pullPolicy }}
+          livenessProbe:
+            failureThreshold: 3
+            initialDelaySeconds: 5
+            periodSeconds: 30
+            successThreshold: 1
+            tcpSocket:
+              port: 5557
+            timeoutSeconds: 1
+          readinessProbe:
+            failureThreshold: 3
+            initialDelaySeconds: 5
+            periodSeconds: 30
+            successThreshold: 1
+            tcpSocket:
+              port: 5557
+            timeoutSeconds: 1
+          resources:
+          {{- toYaml .Values.metrics.resources | nindent 12 }}
+          startupProbe:
+            failureThreshold: 3
+            initialDelaySeconds: 10
+            periodSeconds: 30
+            successThreshold: 1
+            tcpSocket:
+              port: 5557
+            timeoutSeconds: 1
+          
+{{- end }}

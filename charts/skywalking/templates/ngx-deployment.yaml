@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations: {}
+  labels:
+    app: {{ .Values.uiNginx.name }}
+  name: {{ .Values.uiNginx.name }}
+spec:
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: {{ .Values.uiNginx.name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.uiNginx.name }}
+    spec:
+      containers:
+        - name: {{ .Values.uiNginx.name }}
+          image: "{{ .Values.uiNginx.image.repository }}:{{ .Values.uiNginx.image.tag }}"
+          imagePullPolicy: {{ .Values.uiNginx.image.imagePullPolicy }}
+          env: 
+            - name: TZ
+              value: Asia/Shanghai
+            - name: gateway
+              value: "{{ .Values.ui.name }}:8080"
+          livenessProbe:
+            failureThreshold: 3
+            initialDelaySeconds: 5
+            periodSeconds: 30
+            successThreshold: 1
+            tcpSocket:
+              port: 49898
+            timeoutSeconds: 1
+          readinessProbe:
+            failureThreshold: 3
+            initialDelaySeconds: 5
+            periodSeconds: 30
+            successThreshold: 1
+            tcpSocket:
+              port: 49898
+            timeoutSeconds: 1
+          resources:
+          {{- toYaml .Values.uiNginx.resources | nindent 12 }}
+          startupProbe:
+            failureThreshold: 3
+            initialDelaySeconds: 5
+            periodSeconds: 30
+            successThreshold: 1
+            tcpSocket:
+              port: 49898
+            timeoutSeconds: 1
+          

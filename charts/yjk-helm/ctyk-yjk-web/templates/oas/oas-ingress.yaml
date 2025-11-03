@@ -1,0 +1,21 @@
+{{- if and (eq .Values.service.type "Ingress") (.Values.modules.oas.enabled) }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ .Values.image.oas.name }}
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: web
+spec:
+  ingressClassName: {{ .Values.service.ingressClassName }}
+  rules:
+  - host: {{ .Values.service.domain }}
+    http:
+      paths:
+      - path: /oas
+        pathType: Prefix
+        backend:
+          service:
+            name: {{ .Values.image.oas.name }}  ## 后端service服务名称
+            port:
+              number: {{ .Values.image.oas.port }}
+{{- end }}
